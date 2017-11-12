@@ -61,3 +61,70 @@ str(iris_metadata_tbl)
 
 # Examine structure of data
 glimpse(iris_metadata_tbl)
+
+# Chapter 5. Selecting columns
+# track_metadata_tbl has been pre-defined
+glimpse(iris_metadata_tbl)
+
+# Manipulate the track metadata
+iris_metadata_tbl %>%
+  # Select columns
+  select(Sepal_Length, Species)
+
+# Try to select columns using [ ]
+tryCatch({
+  # Selection code here
+  iris_metadata_tbl[, c("Sepal_Length", "Species")]
+},
+error = print
+)
+
+# Chapter 6. Filtering rows
+# track_metadata_tbl has been pre-defined
+glimpse(iris_metadata_tbl)
+
+# Manipulate the track metadata
+iris_metadata_tbl %>%
+  # Select columns
+  select(Sepal_Length, Species) %>%
+  # Filter rows
+  filter(Sepal_Length >= 4 & Sepal_Length < 5)
+
+# Chapter 7. Arranging rows
+# track_metadata_tbl has been pre-defined
+iris_metadata_tbl
+
+# Manipulate the track metadata
+iris_metadata_tbl %>%
+  # Select columns
+  select(Sepal_Length, Species) %>%
+  # Filter rows
+  filter(Sepal_Length >= 4, Sepal_Length < 5) %>%
+  # Arrange rows
+  arrange(desc(Sepal_Length), Species)
+
+# Chapter 8. Mutating columns
+# track_metadata_tbl has been pre-defined
+glimpse(iris_metadata_tbl)
+
+# Manipulate the track metadata
+iris_metadata_tbl %>%
+  # Select columns
+  select(Sepal_Length, Sepal_Width) %>%
+  # Mutate columns
+  mutate(Sepal_Size = Sepal_Length * Sepal_Width)
+
+# Chapter 9. Summarizing columns
+# track_metadata_tbl has been pre-defined
+glimpse(iris_metadata_tbl)
+
+# Manipulate the track metadata
+iris_metadata_tbl %>%
+  # Select columns
+  select(Sepal_Length, Sepal_Width) %>%
+  # Mutate columns
+  mutate(Sepal_Size = Sepal_Length * Sepal_Width) %>% 
+  # Summarize columns
+  summarize(mean_Sepal_Size = mean(Sepal_Size))
+
+# Splendid! Summarizing returns a tibble with a summary statistic in each column.
