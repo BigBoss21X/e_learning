@@ -1,0 +1,122 @@
+# Part 1. Getting Started
+# Chapter 1. The connect-work-disconnect pattern
+Working with sparklyr is very much like working with dplyr when you have data inside a database. In fact, sparklyr converts your R code into SQL code before passing it to Spark.
+
+The typical workflow has three steps:
+
+Connect to Spark using spark_connect().
+Do some work.
+Close the connection to Spark using spark_disconnect().
+In this exercise, you'll do this simplest possible piece of work: returning the version of Spark that is running, using spark_version().
+
+spark_connect() takes a URL that gives the location to Spark. For a local cluster (as you are running), the URL should be "local". For a remote cluster (on another machine, typically a high-performance server), the connection string will be a URL and port to connect on.
+
+spark_version() and spark_disconnect() both take the Spark connection as their only argument.
+
+One word of warning. Connecting to a cluster takes several seconds, so it is impractical to regularly connect and disconnect. While you need to reconnect for each DataCamp exercise, when you incorporate sparklyr into your own workflow, it is usually best to keep the connection open for the whole time that you want to work with Spark.
+
+Instructions
+Load the sparklyr package with library().
+Connect to Spark by calling spark_connect(), with argument master = "local". Assign the result to spark_conn.
+Get the Spark version using spark_version(), with argument sc = spark_conn.
+Disconnect from Spark using spark_disconnect(), with argument sc = spark_conn.
+
+# Load sparklyr
+library(sparklyr)
+
+# Connect to your Spark cluster
+spark_conn <- spark_connect(master = "local")
+
+# Print the version of Spark
+spark_version(sc = spark_conn)
+
+# Disconnect from Spark
+spark_disconnect(sc = spark_conn)
+
+# Chapter 2. Copying data into Spark
+Before you can do any real work using Spark, you need to get your data into it. sparklyr has some functions such as spark_read_csv() that will read a CSV file into Spark. More generally, it is useful to be able to copy data from R to Spark. This is done with dplyr's copy_to() function. Be warned: copying data is a fundamentally slow process. In fact, a lot of strategy regarding optimizing performance when working with big datasets is to find ways of avoiding copying the data from one location to another.
+
+copy_to() takes two arguments: a Spark connection (dest), and a data frame (df) to copy over to Spark.
+
+Once you have copied your data into Spark, you might want some reassurance that it has actually worked. You can see a list of all the data frames stored in Spark using src_tbls(), which simply takes a Spark connection argument (x).
+
+Throughout the course, you will explore track metadata from the Million Song Dataset. While Spark will happily scale well past a million rows of data, to keep things simple and responsive, you will use a thousand track subset. To clarify the terminology: a track refers to a row in the dataset. For your thousand track dataset, this is the same thing as a song (though the full million row dataset suffered from some duplicate songs).
+
+Instructions
+track_metadata, containing the song name, artist name, and other metadata for 1,000 tracks, has been pre-defined in your workspace.
+
+Use str() to explore the track_metadata dataset.
+Connect to your local Spark cluster, storing the connection in spark_conn.
+Copy track_metadata to the Spark cluster using copy_to() .
+See which data frames are available in Spark, using src_tbls().
+Disconnect from Spark.
+
+# Load dplyr
+library(dplyr)
+
+# Explore track_metadata structure
+iris <- tbl_df(iris)
+str(iris) 
+
+# Connect to your Spark cluster
+spark_conn <- spark_connect("local")
+
+# Copy track_metadata to Spark
+iris_metadata_tbl <- copy_to(spark_conn, iris)
+
+# List the data frames available in Spark
+src_tbls(spark_conn)
+
+# Disconnect from Spark
+spark_disconnect(spark_conn)
+
+# Chapter 3. Big data, tiny tibble
+In the last exercise, when you copied the data to Spark, copy_to() returned a value. This return value is a special kind of tibble() that doesn't contain any data of its own. To explain this, you need to know a bit about the way that tidyverse packages store data. Tibbles are usually just a variant of data.frames that have a nicer print method. However, dplyr also allows them to store data from a remote data source, such as databases, and – as is the case here – Spark. For remote datasets, the tibble object simply stores a connection to the remote data. This will be discussed in more detail later, but the important point for now is that even though you have a big dataset, the size of the tibble object is small.
+
+On the Spark side, the data is stored in a variable called a DataFrame. This is a more or less direct equivalent of R's data.frame variable type. (Though the column variable types are named slightly differently – for example numeric columns are called DoubleType columns.) Throughout the course, the term data frame will be used, unless clarification is needed between data.frame and DataFrame. Since these types are also analogous to database tables, sometimes the term table will also be used to describe this sort of rectangular data.
+
+Calling tbl() with a Spark connection, and a string naming the Spark data frame will return the same tibble object that was returned when you used copy_to().
+
+A useful tool that you will see in this exercise is the object_size() function from the pryr package. This shows you how much memory an object takes up.
+
+Instructions
+A Spark connection has been created for you as spark_conn. The track metadata for 1,000 tracks is stored in the Spark cluster in the table "track_metadata".
+
+Link to the "track_metadata" table using tbl(). Assign the result to track_metadata_tbl.
+See how big the dataset is, using dim() on track_metadata_tbl.
+See how small the tibble is, using object_size() on track_metadata_tbl.
+
+# Link to the track_metadata table in Spark
+iris_metadata_tbl <- tbl(spark_conn, "iris")
+
+# See how big the dataset is
+dim(iris_metadata_tbl)
+
+# See how small the tibble is
+library(pryr)
+object_size(iris_metadata_tbl)
+
+# Chapter 4. Exploring the structure of tibbles
+If you try to print a tibble that describes data stored in Spark, some magic has to happen, since the tibble doesn't keep a copy of the data itself. The magic is that the print method uses your Spark connection, copies some of the contents back to R, and displays those values as though the data had been stored locally. As you saw earlier in the chapter, copying data is a slow operation, so by default, only 10 rows and as many columns will fit onscreen, are printed.
+
+You can change the number of rows that are printed using the n argument to print(). You can also change the width of content to display using the width argument, which is specified as the number of characters (not the number of columns). A nice trick is to use width = Inf to print all the columns.
+
+The str() function is typically used to display the structure of a variable. For data.frames, it gives a nice summary with the type and first few values of each column. For tibbles that have a remote data source however, str() doesn't know how to retrieve the data. That means that if you call str() on a tibble that contains data stored in Spark, you see a list containing a Spark connection object, and a few other bits and pieces.
+
+If you want to see a summary of what each column contains in the dataset that the tibble refers to, you need to call glimpse() instead. Note that for remote data such as those stored in a Spark cluster datasets, the number of rows is a lie! In this case, glimpse() never claims that the data has more than 25 rows.
+
+Instructions
+A Spark connection has been created for you as spark_conn. A tibble attached to the track metadata stored in Spark has been pre-defined as track_metadata_tbl.
+
+Print the first 5 rows and all the columns of the track metadata.
+Examine the structure of the tibble using str().
+Examine the structure of the track metadata using glimpse().
+
+# Print 5 rows, all columns
+print(track_metadata_tbl, n = 5, width = Inf)
+
+# Examine structure of tibble
+str(track_metadata_tbl)
+
+# Examine structure of data
+glimpse(track_metadata_tbl)
