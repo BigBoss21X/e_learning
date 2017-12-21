@@ -1,0 +1,263 @@
+# # Quiz 2. Step 1: Problem definition
+# Which of these are NOT appropriate problem statements?
+# 
+# Possible Answers
+# (1) Does Amazon or Google have a better perceived pay according to online reviews?
+# (2) Let's learn something about how employees review both Amazon and Google.
+# (3) Does Amazon or Google have a better work-life balance according to current employees?
+# 
+# The answer is (2). This one is too much general, need to be more specific. 
+
+# Step 2. Identifying the text sources
+# (1) amazon data
+amzn_url <- "https://assets.datacamp.com/production/course_935/datasets/500_amzn.csv"
+amzn <- read.csv(amzn_url, skipNul = TRUE)
+amzn <- na.omit(amzn)
+str(amzn)
+
+amzn_pros <- amzn$pros
+amzn_cons <- amzn$cons
+
+# (2) google data
+goog_url <- "https://assets.datacamp.com/production/course_935/datasets/500_goog.csv"
+goog <- read.csv(goog_url,skipNul = TRUE)
+goog <- na.omit(goog)
+str(goog)
+
+goog_pros <- goog$pros
+goog_cons <- goog$cons
+
+# Step 3. Text organization
+library(qdap)
+library(tm)
+
+# qdap cleaning function
+qdap_clean <- function(x) {
+  x <- replace_abbreviation(x)
+  x <- replace_contraction(x)
+  x <- replace_number(x)
+  x <- replace_ordinal(x)
+  x <- replace_symbol(x)
+  x <- tolower(x)
+  return(x)
+}
+
+# tm cleaning function
+tm_clean <- function(corpus){
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, stripWhitespace)
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "google", "amazon", "company"))
+  return(corpus)
+}
+## (1) Amazon
+# Alter amzn_pros
+(amzn_pros <- qdap_clean(amzn_pros))
+# Alter amzn_cons
+(amzn_cons <- qdap_clean(amzn_cons))
+# Create az_p_corp 
+(az_p_corp <- VCorpus(VectorSource(amzn_pros)))
+# Create az_c_corp
+(az_c_corp <- VCorpus(VectorSource(amzn_cons)))
+# Create amzn_pros_corp
+(amzn_pros_corp <- tm_clean(az_p_corp))
+# Create amzn_cons_corp
+(amzn_cons_corp <- tm_clean(az_c_corp))
+
+## (2) Google
+# Apply qdap_clean to goog_pros
+goog_pros <- qdap_clean(goog_pros)
+# Apply qdap_clean to goog_cons
+goog_cons <- qdap_clean(goog_cons)
+# Create goog_p_corp
+goog_p_corp <- VCorpus(VectorSource(goog_pros))
+# Create goog_c_corp
+goog_c_corp <- VCorpus(VectorSource(goog_cons))
+# Create goog_pros_corp
+goog_pros_corp <- tm_clean(goog_p_corp)
+# Create goog_cons_corp
+goog_cons_corp <- tm_clean(goog_c_corp)
+
+# Step 4.1. Feature Extraction & Analysis: amzn_pros
+library(RWeka)
+library(wordcloud)
+
+tokenizer <- function(x) {
+  NGramTokenizer(x, Weka_control(min = 2, max = 2))
+}
+
+# Create amzn_p_tdm
+amzn_p_tdm <- TermDocumentMatrix(amzn_pros_corp, control = list(tokenize = tokenizer))
+
+# Create amzn_p_tdm_m
+amzn_p_tdm_m <- as.matrix(amzn_p_tdm)
+
+# Create amzn_p_freq
+amzn_p_freq <- rowSums(amzn_p_tdm_m)
+
+# Plot a wordcloud using amzn_p_freq values
+wordcloud(names(amzn_p_freq), amzn_p_freq, max.words = 25, color = "blue")
+
+# Step 4.2. Feature Extraction & Analysis: amzn_cons
+# Create amzn_c_tdm
+amzn_c_tdm <- TermDocumentMatrix(amzn_cons_corp, control = list(tokenize = tokenizer))
+
+# Create amzn_c_tdm_m
+amzn_c_tdm_m <- as.matrix(amzn_c_tdm)
+
+# Create amzn_c_freq
+amzn_c_freq <- rowSums(amzn_c_tdm_m)
+
+# Plot a wordcloud of negative Amazon bigrams
+wordcloud(names(amzn_c_freq), amzn_c_freq, max.words = 25, color = "red")
+
+# Chapter 4.3. amzn_cons dendrogram
+# Create amzn_c_tdm
+amzn_c_tdm <- TermDocumentMatrix(amzn_cons_corp, control = list(tokenize = tokenizer))
+
+# Print amzn_c_tdm to the console
+amzn_c_tdm
+
+# Create amzn_c_tdm2 by removing sparse terms 
+amzn_c_tdm2 <- removeSparseTerms(amzn_c_tdm, sparse = .993)
+
+# Create hc as a cluster of distance values
+hc <- hclust(dist(amzn_c_tdm2, method = "euclidean"), method = "complete")
+
+# Produce a plot of hc
+plot(hc)
+
+# Chapter 4.4. Word association
+# Create amzn_p_tdm
+amzn_p_tdm <- TermDocumentMatrix(amzn_pros_corp, control = list(tokenize = tokenizer))
+
+# Create amzn_p_m
+amzn_p_m <- as.matrix(amzn_p_tdm)
+
+# Create amzn_p_freq
+amzn_p_freq <- rowSums(amzn_p_m)
+
+# Create term_frequency
+term_frequency <- sort(amzn_p_freq, decreasing = TRUE)
+
+# Print the 5 most common terms
+term_frequency[1:5]
+
+# Find associations with fast paced
+library(dendextend)
+findAssocs(amzn_p_tdm, "fast paced", 0.2)
+
+# Step 4.5. Quick review of Google reviews
+all_pros <- paste(goog_pros, collapse = "")
+all_cons <- paste(goog_cons, collapse = "")
+all_goog <- c(all_pros, all_cons)
+
+all_goog_corpus <- VCorpus(VectorSource(all_goog))
+
+# Create all_goog_corp
+all_goog_corp <- tm_clean(all_goog_corpus)
+
+# Create all_tdm
+all_tdm <- TermDocumentMatrix(all_goog_corp)
+
+# Name the columns of all_tdm
+colnames(all_tdm) <- c("Goog_Pros", "Goog_Cons")
+
+# Create all_m
+all_m <- as.matrix(all_tdm)
+
+# Build a comparison cloud
+comparison.cloud(all_m, colors = c("#F44336", "#2196f3"), max.words = 100)
+
+# Step 5.1. Cage match! Amazon vs. Google pro reviews
+all_goog_pros <- paste(goog_pros, collapse = "")
+all_goog_cons <- paste(goog_cons, collapse = "")
+all_amzn_pros <- paste(amzn_pros, collapse = "")
+all_amzn_cons <- paste(amzn_cons, collapse = "")
+
+all_both_pros <- c(all_goog_pros, all_amzn_pros)
+all_pros_corpus <- VCorpus(VectorSource(all_both_pros))
+all_pros_corp <- tm_clean(all_pros_corpus)
+
+# Create all_tdm
+all_both_tdm <- TermDocumentMatrix(all_pros_corp, control = list(tokenize = tokenizer))
+
+# Name the columns of all_tdm
+colnames(all_both_tdm) <- c("Google", "Amazon")
+
+all_tdm_m <- as.matrix(all_both_tdm)
+
+# Create common_words
+common_words <- subset(all_tdm_m, all_tdm_m[, 1] > 0 & all_tdm_m[, 2] > 0)
+
+# Create difference
+difference <- abs(common_words[, 1] - common_words[, 2])
+
+# Add difference to common_words
+common_words <- cbind(common_words, difference)
+
+# Order the data frame from most differences to least
+common_words <- common_words[order(common_words[, 3], decreasing = TRUE), ]
+
+# Create top15_df
+top15_df <- data.frame(x = common_words[1:15, 1], 
+                       y = common_words[1:15, 2],
+                       labels = rownames(common_words[1:15, ]))
+
+library(plotrix)
+# Create the pyramid plot
+pyramid.plot(top15_df$x, top15_df$y, 
+             top15_df$labels, gap = 12, 
+             top.labels = c("Google", "Pro Words", "Amazon"), 
+             main = "Words in Common", unit = NULL)
+
+# Step 5.2. Cage match! Amazon vs. Google pro reviews
+all_goog_pros <- paste(goog_pros, collapse = "")
+all_goog_cons <- paste(goog_cons, collapse = "")
+all_amzn_pros <- paste(amzn_pros, collapse = "")
+all_amzn_cons <- paste(amzn_cons, collapse = "")
+
+all_both_cons <- c(all_goog_cons, all_amzn_cons)
+all_cons_corpus <- VCorpus(VectorSource(all_both_cons))
+all_cons_corp <- tm_clean(all_cons_corpus)
+
+# Create all_tdm
+all_both_cons_tdm <- TermDocumentMatrix(all_cons_corp, control = list(tokenize = tokenizer))
+
+# Name the columns of all_tdm
+colnames(all_both_cons_tdm) <- c("Google", "Amazon")
+
+all_cons_tdm_m <- as.matrix(all_both_cons_tdm)
+
+# Create common_cons_words
+common_cons_words <- subset(all_cons_tdm_m, all_cons_tdm_m[, 1] > 0 & all_cons_tdm_m[, 2] > 0)
+
+# Create difference
+cons_difference <- abs(common_cons_words[, 1] - common_cons_words[, 2])
+
+# Add difference to common_cons_words
+common_cons_words <- cbind(common_cons_words, cons_difference)
+
+# Order the data frame from most differences to least
+common_cons_words <- common_cons_words[order(common_cons_words[, 3], decreasing = TRUE), ]
+
+# Create top15_df
+cons_top15_df <- data.frame(x = common_cons_words[1:15, 1], 
+                       y = common_cons_words[1:15, 2],
+                       labels = rownames(common_cons_words[1:15, ]))
+
+library(plotrix)
+# Create the pyramid plot
+pyramid.plot(cons_top15_df$x, cons_top15_df$y, 
+             cons_top15_df$labels, gap = 12, 
+             top.labels = c("Google", "Cons Words", "Amazon"), 
+             main = "Words in Common", unit = NULL)
+
+findAssocs(amzn_p_tdm, "fast paced", 0.2)[[1]][1:15]
+# Quiz 1. Given the abbreviated results of the associated phrases, what would you recommend Amazon HR recruiters look for in candidates? (You can use the snippet below to gain insight on phrases associated with "fast paced".)
+
+# Possible Answers
+# (1) Look for candidates that like good benefits. Amazon's benefits are better than Google's.
+# (2) Identify candidates that view an intense workload as an opportunity to learn fast and give them ample opportunity.
+# (3) You can't make a recommendation based on the text mining you have done in this chapter.
+
+

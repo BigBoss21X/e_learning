@@ -1,0 +1,417 @@
+# Chapter 1. Quick taste of text mining
+It is always fun to jump in with a quick and easy example. Sometimes we can find out the author's intent and main ideas just by looking at the most common words.
+
+At its heart, bag of words text mining represents a way to count terms, or n-grams, across a collection of documents. Consider the following sentences, which we've saved to text and made available in your workspace:
+
+text <- "Text mining usually involves the process of structuring the input text. The overarching goal is, essentially, to turn text into data for analysis, via application of natural language processing (NLP) and analytical methods."
+Manually counting words in the sentences above is a pain! Fortunately, the qdap package offers a better alternative. You can easily find the top 4 most frequent terms (including ties) in text by calling the freq_terms function and specifying 4.
+
+frequent_terms <- freq_terms(text, 4)
+The frequent_terms object stores all unique words and their count. You can then make a bar chart simply by calling the plot function on the frequent_terms object.
+
+plot(frequent_terms)
+Instructions
+We've created an object in your workspace called new_text containing several sentences.
+
+Load the qdap package
+Print new_text to the console.
+Create term_count consisting of the 10 most frequent terms in new_text.
+Plot a bar chart with the results of term_count.
+# Load qdap
+library(qdap)
+
+# Print new_text to the console
+new_text
+
+# Find the 10 most frequent terms: term_count
+term_count <- freq_terms(new_text, 10)
+
+# Plot term_count
+plot(term_count)
+
+# Chapter 2. Load some text
+Text mining begins with loading some text data into R, which we'll do with the read.csv() function. By default, read.csv() treats character strings as factor levels like Male/Female. To prevent this from happening, it's very important to use the argument stringsAsFactors = FALSE.
+
+A best practice is to examine the object you read in to make sure you know which column(s) are important. The str() function provides an efficient way of doing this. You can also count the number of documents using the nrow() function on the new object. In this example, it will tell you how many coffee tweets are in the vector.
+
+If the data frame contains columns that are not text, you may want to make a new object using only the correct column of text (e.g. some_object$column_name).
+
+A word of warning: you'll be working with real tweets from real people in this course, so you may find some mild profanity from time to time.
+
+Instructions
+Create a new object tweets using read.csv() on the file coffee.csv, which contains tweets mentioning coffee. Don't forget to add stringsAsFactors = FALSE!
+Examine the tweets object using str() to determine which column has the text you'll want to analyze.
+Print out the number of rows in the tweets data frame.
+Make a new coffee_tweets object using only the text column you identified earlier. To do so, use the $ operator and column name.
+
+# Import text data
+tweets <- read.csv("coffee.csv", stringsAsFactors = FALSE)
+
+# View the structure of tweets
+str(tweets)
+
+# Print out the number of rows in tweets
+nrow(tweets)
+
+# Isolate text from tweets: coffee_tweets
+coffee_tweets <- tweets$text
+
+# Chapter 3. Make the vector a VCorpus object (1)
+Recall that you've loaded your text data as a vector called coffee_tweets in the last exercise. Your next step is to convert this vector containing the text data to a corpus. As you've learned in the video, a corpus is a collection of documents, but it's also important to know that in the tm domain, R recognizes it as a data type.
+
+There are two kinds of the corpus data type, the permanent corpus, PCorpus, and the volatile corpus, VCorpus. In essence, the difference between the two has to do with how the collection of documents is stored in your computer. In this course, we will use the volatile corpus, which is held in your computer's RAM rather than saved to disk, just to be more memory efficient.
+
+To make a volatile corpus, R needs to interpret each element in our vector of text, coffee_tweets, as a document. And the tm package provides what are called Source functions to do just that! In this exercise, we'll use a Source function called VectorSource() because our text data is contained in a vector. The output of this function is called a Source object. Give it a shot!
+
+Instructions
+Load the tm package.
+Create a Source object from the coffee_tweets vector. Call this new object coffee_source.
+
+# Load tm
+library(tm)
+
+# Make a vector source: coffee_source
+coffee_source <- VectorSource(coffee_tweets)
+
+# Chapter 3. Make the vector a VCorpus object (2)
+Now that we've converted our vector to a Source object, we pass it to another tm function, VCorpus(), to create our volatile corpus. Pretty straightforward, right?
+
+The VCorpus object is a nested list, or list of lists. At each index of the VCorpus object, there is a PlainTextDocument object, which is essentially a list that contains the actual text data (content), as well as some corresponding metadata (meta). It can help to visualize a VCorpus object to conceptualize the whole thing.
+
+For example, to examine the contents of the second tweet in coffee_corpus, you'd subset twice. Once to specify the second PlainTextDocument corresponding to the second tweet and again to extract the first (or content) element of that PlainTextDocument:
+
+coffee_corpus[[15]][1]
+Instructions
+Call the VCorpus() function on the coffee_source object to create coffee_corpus.
+Verify coffee_corpus is a VCorpus object by printing it to the console.
+Print the 15th element of coffee_corpus to the console to verify that it's a PlainTextDocument that contains the content and metadata of the 15th tweet. Use double bracket subsetting.
+Print the content of the 15th tweet in coffee_corpus. Use double brackets to select the proper tweet, followed by single brackets (or the $ notation) to extract the content of that tweet.
+
+## coffee_source is already in your workspace
+
+# Make a volatile corpus: coffee_corpus
+coffee_corpus <- VCorpus(coffee_source)
+
+# Print out coffee_corpus
+coffee_corpus
+
+# Print data on the 15th tweet in coffee_corpus
+coffee_corpus[[15]]
+
+# Print the content of the 15th tweet in coffee_corpus
+coffee_corpus[[15]][1]
+
+# Chapter 4. Make a VCorpus from a data frame
+Because another common text source is a data frame, there is a Source function called DataframeSource(). The DataframeSource() function treats the entire row as a complete document, so be careful you don't pick up non-text data like customer IDs when sourcing a document this way.
+
+Instructions
+In your workspace, there's a simple data frame called example_text from which we're only interested in the second and third columns (i.e. example_text[, 2:3]).
+
+Print example_text to the console
+Create df_source using DataframeSource() on columns 2 and 3 from example_text.
+Create df_corpus by converting df_source to a corpus object.
+Print out df_corpus. Notice how many documents it contains.
+Make another object vec_source using the VectorSource() function on just the third column from example_text.
+Create vec_corpus by converting vec_source to a corpus object.
+Print out vec_corpus. Observe whether it has the same number of documents as df_corpus.
+
+# Print example_text to the console
+example_text
+
+# Create a DataframeSource on columns 2 and 3: df_source
+df_source <- DataframeSource(example_text[, 2:3])
+
+# Convert df_source to a corpus: df_corpus
+df_corpus <- VCorpus(df_source)
+
+# Examine df_corpus
+df_corpus
+
+# Create a VectorSource on column 3: vec_source
+vec_source <- VectorSource(example_text[, 3])
+
+# Convert vec_source to a corpus: vec_corpus
+vec_corpus <- VCorpus(vec_source)
+
+# Examine vec_corpus
+vec_corpus
+
+# Chapter 5. Common cleaning functions from tm
+Now that you know two ways to make a corpus, we can focus on cleaning, or preprocessing, the text. First, we'll clean a small piece of text so you can see how it works. Then we will move on to actual corpora.
+
+In bag of words text mining, cleaning helps aggregate terms. For example, it may make sense that the words "miner", "mining" and "mine" should be considered one term. Specific preprocessing steps will vary based on the project. For example, the words used in tweets are vastly different than those used in legal documents, so the cleaning process can also be quite different.
+
+Common preprocessing functions include:
+
+tolower(): Make all characters lowercase
+removePunctuation(): Remove all punctuation marks
+removeNumbers(): Remove numbers
+stripWhitespace(): Remove excess whitespace
+Note that tolower() is part of base R, while the other three functions come from the tm package. Going forward, we'll load the tm and qdap for you when they are needed. Every time we introduce a new package, we'll have you load it the first time.
+
+Instructions
+Create an object, text, containing the sentence below:
+<b>She</b> woke up at       6 A.M. It\'s so early!  She was only 10% awake and began drinking coffee in front of her computer.
+Apply each of the following functions to text, simply printing results to the console:
+tolower()
+removePunctuation()
+removeNumbers()
+stripWhitespace()
+
+
+# Create the object: text
+text <- "<b>She</b> woke up at       6 A.M. It\'s so early!  She was only 10% awake and began drinking coffee in front of her computer."
+
+# All lowercase
+tolower(text)
+
+# Remove punctuation
+removePunctuation(text)
+
+# Remove numbers
+removeNumbers(text)
+
+# Remove whitespace
+stripWhitespace(text)
+
+# Chapter 6. Cleaning with qdap
+The qdap package offers other text cleaning functions. Each is useful in its own way and is particularly powerful when combined with the others.
+
+bracketX(): Remove all text within brackets (e.g. "It's (so) cool" becomes "It's cool")
+replace_number(): Replace numbers with their word equivalents (e.g. "2" becomes "two")
+replace_abbreviation(): Replace abbreviations with their full text equivalents (e.g. "Sr" becomes "Senior")
+replace_contraction(): Convert contractions back to their base words (e.g. "shouldn't" becomes "should not")
+replace_symbol() Replace common symbols with their word equivalents (e.g. "$" becomes "dollar")
+Instructions
+Apply the following functions to the text object from the previous exercise:
+
+bracketX()
+replace_number()
+replace_abbreviation()
+replace_contraction()
+replace_symbol()
+
+## text is still loaded in your workspace
+
+# Remove text within brackets
+bracketX(text)
+
+# Replace numbers with words
+replace_number(text)
+
+# Replace abbreviations
+replace_abbreviation(text)
+
+# Replace contractions
+replace_contraction(text)
+
+# Replace symbols with words
+replace_symbol(text)
+
+# Chapter 7. All about stop words
+Often there are words that are frequent but provide little information. So you may want to remove these so-called stop words. Some common English stop words include "I", "she'll", "the", etc. In the tm package, there are 174 stop words on this common list.
+
+In fact, when you are doing an analysis you will likely need to add to this list. In our coffee tweet example, all tweets contain "coffee", so it's important to pull out that word in addition to the common stop words. Leaving it in doesn't add any insight and will cause it to be overemphasized in a frequency analysis.
+
+Using the c() function allows you to add new words (separated by commas) to the stop words list. For example, the following would add "word1" and "word2" to the default list of English stop words:
+
+all_stops <- c("word1", "word2", stopwords("en"))
+Once you have a list of stop words that makes sense, you will use the removeWords() function on your text. removeWords() takes two arguments: the text object to which it's being applied and the list of words to remove.
+
+Instructions
+Print out the standard stop words using stopwords("en").
+Print out text with the standard stop words removed.
+Create new_stops consisting of the standard stop words plus "coffee" and "bean".
+Print out text with your customized stop words removed.
+
+## text is preloaded into your workspace
+
+# List standard English stop words
+stopwords("en")
+
+# Print text without standard stop words
+removeWords(text, stopwords("en"))
+
+# Add "coffee" and "bean" to the list: new_stops
+new_stops <- c("coffee", "bean", stopwords("en"))
+
+# Remove stop words from text
+removeWords(text, new_stops)
+
+# Chapter 8. Intro to word stemming and stem completion
+Still another useful preprocessing step involves word stemming and stem completion. The tm package provides the stemDocument() function to get to a word's root. This function either takes in a character vector and returns a character vector, or takes in a PlainTextDocument and returns a PlainTextDocument.
+
+For example,
+
+stemDocument(c("computational", "computers", "computation"))
+returns "comput" "comput" "comput". But because "comput" isn't a real word, we want to re-complete the words so that "computational", "computers", and "computation" all refer to the same word, say "computer", in our ongoing analysis.
+
+We can easily do this with the stemCompletion() function, which takes in a character vector and an argument for the completion dictionary. The completion dictionary can be a character vector or a Corpus object. Either way, the completion dictionary for our example would need to contain the word "computer" for all the words to refer to it.
+
+Instructions
+Create a vector called complicate consisting of the words "complicated", "complication", and "complicatedly" in that order.
+Store the stemmed version of complicate to an object called stem_doc.
+Create comp_dict that contains one word, "complicate".
+Create complete_text by applying stemCompletion() to stem_doc. Re-complete the words using comp_dict as the reference corpus.
+Print complete_text to the console.
+
+# Create complicate
+complicate <- c("complicated", "complication", "complicatedly")
+
+# Perform word stemming: stem_doc
+stem_doc <- stemDocument(complicate)
+stem_doc
+
+# Create the completion dictionary: comp_dict
+comp_dict <- "complicate"
+
+# Perform stem completion: complete_text 
+complete_text <- stemCompletion(stem_doc, com_dict) 
+
+# Print complete_text
+complete_text
+
+# Chapter 9. Word stemming and stem completion on a sentence
+Let's consider the following sentence as our document for this exercise:
+
+"In a complicated haste, Tom rushed to fix a new complication, too complicatedly."
+This sentence contains the same three forms of the word "complicate" that we saw in the previous exercise. The difference here is that even if you called stemDocument() on this sentence, it would return the sentence without stemming any words. Take a moment and try it out in the console. Be sure to include the punctuation marks.
+
+This happens because stemDocument() treats the whole sentence as one word. In other words, our document is a character vector of length 1, instead of length n, where n is the number of words in the document. To solve this problem, we first remove the punctation marks with the removePunctuation() function you learned a few exercises back. We then strsplit() this character vector of length 1 to length n, unlist(), then proceed to stem and re-complete.
+
+Don't worry if that was confusing. Let's go through the process step by step!
+
+Instructions
+The document text_data and the completion dictionary comp_dict are loaded in your workspace.
+
+Remove the punctuation marks in text_data using removePunctuation() and store the result into rm_punc.
+Call strsplit() on rm_punc with the split argument set equal to " ". Nest this inside unlist() and store the result as n_char_vec.
+Use stemDocument() again to perform word stemming on n_char_vec and store the result as stem_doc.
+Print stem_doc on your console.
+Create complete_doc by re-completing your stemmed document with stemCompletion() and using comp_dict as your reference corpus.
+Print complete_doc to the console.
+
+# Remove punctuation: rm_punc
+rm_punc <- removePunctuation(text_data)
+
+# Create character vector: n_char_vec
+n_char_vec <- unlist(strsplit(rm_punc, split = ' '))
+
+# Perform word stemming: stem_doc
+stem_doc <- stemDocument(n_char_vec)
+
+# Print stem_doc
+stem_doc
+
+# Re-complete stemmed document: complete_doc
+complete_doc <- stemCompletion(stem_doc, comp_dict) 
+
+# Print complete_doc
+complete_doc
+
+# Chapter 10. Apply preprocessing steps to a corpus
+The tm package provides a special function tm_map() to apply cleaning functions to a corpus. Mapping these functions to an entire corpus makes scaling the cleaning steps very easy.
+
+To save time (and lines of code) it's a good idea to use a custom function like the one displayed in the editor, since you may be applying the same functions over multiple corpora. You can probably guess what the clean_corpus() function does. It takes one argument, corpus, and applies a series of cleaning functions to it in order, then returns the final result.
+
+Notice how the tm package functions do not need content_transformer(), but base R and qdap functions do.
+
+Be sure to test your function's results. If you want to draw out currency amounts, then removeNumbers() shouldn't be used! Plus, the order of cleaning steps makes a difference. For example, if you removeNumbers() and then replace_number(), the second function won't find anything to change! Check, check, and re-check!
+
+Instructions
+Edit the custom function clean_corpus() in the sample code to apply (in order):
+tm's stripWhitespace()
+tm's removePunctuation()
+Base R's tolower()
+Add "mug" to the stop words list c(stopwords("en"), "coffee")
+Create clean_corp by applying clean_corpus() to the included corpus tweet_corp.
+Print the cleaned 227th tweet in clean_corp using indexing [[227]][1].
+Compare it to the original tweet from tweets$text tweet using [227].
+
+# Alter the function code to match the instructions
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, content_transformer(replace_abbreviation))
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, removeNumbers)
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "coffee"))
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  return(corpus)
+}
+
+Change, 
+
+# Alter the function code to match the instructions
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, stripWhitespace)
+  corpus <- tm_map(corpus, removePunctuation)
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- tm_map(corpus, removeWords, c(stopwords("en"), "coffee", "mug"))
+  return(corpus)
+}
+
+# Apply your customized function to the tweet_corp: clean_corp
+clean_corp <- clean_corpus(tweet_corp)
+
+# Print out a cleaned up tweet
+clean_corp[[227]][1]
+
+# Print out the same tweet in original form
+tweets$text[227]
+
+# Chapter 11. Make a document-term matrix
+Hopefully you are not too tired after all this basic text mining work! Just in case, let's revisit the coffee tweets to build a document-term matrix.
+
+Beginning with the coffee.csv file, we have used common transformations to produce a clean corpus called clean_corp.
+
+The document-term matrix is used when you want to have each document represented as a row. This can be useful if you are comparing authors within rows, or the data is arranged chronologically and you want to preserve the time series.
+
+Instructions
+Create coffee_dtm by applying DocumentTermMatrix() to clean_corp.
+Print the information about the coffee_dtm object.
+Create coffee_m, a matrix version of coffee_dtm, using the as.matrix() function.
+Print the dimensions of coffee_m to the console using the dim() function. Note the number of rows and columns.
+Look at documents 148 through 150 and terms 2587 through 2590 (i.e. [148:150, 2587:2590]).
+
+# Create the dtm from the corpus: coffee_dtm
+coffee_dtm <- DocumentTermMatrix(clean_corp)
+
+# Print out coffee_dtm data
+coffee_dtm
+
+# Convert coffee_dtm to a matrix: coffee_m
+coffee_m <- as.matrix(coffee_dtm)
+
+# Print the dimensions of coffee_m
+dim(coffee_m)
+
+# Review a portion of the matrix
+coffee_m[148:150, 2587:2590]
+
+# Chapter 12. Make a term-document matrix
+You're almost done with the not-so-exciting foundational work before we get to some fun visualizations and analyses based on the concepts you've learned so far!
+
+In this exercise, you are performing a similar process but taking the transpose of the document-term matrix. In this case, the term-document matrix has terms in the first column and documents across the top as individual column names.
+
+The TDM is often the matrix used for language analysis. This is because you likely have more terms than authors or documents and life is generally easier when you have more rows than columns. An easy way to start analyzing the information is to change the matrix into a simple matrix using as.matrix() on the TDM.
+
+Instructions
+Create coffee_tdm by applying TermDocumentMatrix() to clean_corp.
+Print out information about the coffee_tdm object.
+Create coffee_m by converting coffee_tdm to a matrix using as.matrix().
+Print the dimensions of coffee_m to the console. Note the number of rows then columns.
+Look at terms 2587 through 2590 and documents 148 through 150 (i.e. [2587:2590, 148:150]).
+
+# Create a TDM from clean_corp: coffee_tdm
+coffee_tdm <- TermDocumentMatrix(clean_corp)
+
+# Print coffee_tdm data
+coffee_tdm
+
+# Convert coffee_tdm to a matrix: coffee_m
+coffee_m <- as.matrix(coffee_tdm)
+
+# Print the dimensions of the matrix
+dim(coffee_m)
+
+# Review a portion of the matrix
+coffee_m[2587:2590, 148:150]
