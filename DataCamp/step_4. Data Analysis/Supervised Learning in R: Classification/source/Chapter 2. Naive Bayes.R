@@ -80,4 +80,42 @@ predict(locmodel, thursday9am)
 saturday9am <- data.frame(daytype = "weekend")
 predict(locmodel, saturday9am)
 
-# Chapter 4. 
+# Chapter 4. Examining "raw" probabilities
+# The naivebayes package offers several ways to peek inside a Naive Bayes model.
+# Typing the name of the model object provides the a priori (overall) and conditional probabilities of each of the model's predictors. If one were so inclined, you might use these for calculating posterior (predicted) probabilities by hand.
+# Alternatively, R will compute the posterior probabilities for you if the type = "prob" parameter is supplied to the predict() function.
+# Using these methods, examine how the model's predicted 9am location probability varies from day-to-day.
+
+# Instructions
+# The model locmodel that you fit in the previous exercise is in your workspace. 
+
+# Print the locmodel object to the console to view the computed a priori and conditional probabilties
+# Examine the location prediction model
+locmodel
+
+# Use the predict() function similarly to the previous exercise, but with type = "prob" to see the predicted probabilities for Thursday at 9am. 
+# Obtain the predicted probabilties for Thursday at 9am
+predict(locmodel, thursday9am, type = "prob")
+
+# Compare these to the predicted probabilities for Saturday at 9am.
+# Obtain the predicted probabilities for Saturday at 9am
+# saturday9am data frame's structure is a bit different. 
+predict(locmodel, saturday9am, type = "prob")
+
+# Chapter 5. Understanding independence
+# Understanding the idea of event independence will become important as you learn more about how "naive" Bayes got its name. Which of the following is true about independent events?
+
+# Possible Answers
+# The events cannot occur at the same time. 
+  # -> If I flip a coin two times in a row, both flips are independent. 
+
+# A Venn diagram will always show no intersection. 
+  # -> The Venn diagram shows an intersection if the events can occur together. But, this doesn't mean they're dependent.
+
+# Knowing the outcome of one event does not help predict the other. 
+  # -> Yes! One event is independent of another if knowing one doesen't give you information about how likely the other is. For example, knowing if it's raining in New York doesn't help you predict the weather in San Francisco. The weather events in the two cities are independent of each other. 
+
+# At least one of the events is completely random. 
+  # -> All of the events you're learning about are random to a certain extent. 
+
+# The answer is (3). 
