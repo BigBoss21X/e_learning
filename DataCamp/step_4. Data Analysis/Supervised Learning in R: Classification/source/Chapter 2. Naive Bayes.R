@@ -54,4 +54,30 @@ p_A_given_B <- p_AB / p_B
 # Brett's location is dependent on the day of the week. 
 # All of the above. 
 
+# Chapter 3. A simple Naive Bayes location model
+# The previous exercises showed that the probability that Brett is at work or at home at 9am is highly dependent on whether it is the weekend or a weekday. 
+# To see this finding in action, use the where9am data frame to build a Naive Bayes model on the same data. 
+# You can then use this model to predict the future: where does the model think that Brett will be at 9am on Thursday and at 9am on Saturday? 
 
+# Instructions
+# The dataframe where9am is available in your workspace. This dataset contains information about Brett's location at 9am on different days. 
+
+# Load naivebayes package. 
+library(naivebayes)
+
+# Use naive_bayes() with a formula like y ~ x to build a model of location as a function of daytype. 
+# Build the location prediction model
+where9am
+locmodel <- naive_bayes(location ~ daytype, data = where9am)
+
+# Forecast the Thursday 9am location using predict() with the thursday9am object as newdata argument. 
+# Predict Thursday's 9am location
+thursday9am <- data.frame(daytype = "weekday")
+predict(locmodel, thursday9am)
+
+# Do the same for predicting the saturday9am location.
+# Predict Saturdays's 9am location
+saturday9am <- data.frame(daytype = "weekend")
+predict(locmodel, saturday9am)
+
+# Chapter 4. 
