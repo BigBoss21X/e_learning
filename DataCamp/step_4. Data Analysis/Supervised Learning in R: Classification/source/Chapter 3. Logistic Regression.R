@@ -61,3 +61,9 @@ mean(donors$donated == donors$donation_pred)
 # But, with an accuracy of nearly 80%, the model seems to be doing its job. But, is it too good to be true?
 
 # Chapter 3. The limitations of accuracy. 
+# In the previous exercise, you found that the logistic regression model made a correct prediction nearly 80% of the time. Despite this relatively high accuracy, the result is misleading due to the rarity of outcome being predicted.
+
+# The donors dataset is available in your workspace. What would the accuracy have been if a model had simply predicted "no donation" for each person?
+# Possible Answers
+# 80%, 85%, 90%, 95%
+# Correct! With an accuracy of only 80%, the model is actually performing WORSE than if it were to predict non-donor for every record.
