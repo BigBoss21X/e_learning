@@ -14,12 +14,12 @@ library(tidyverse)
 # building a Naive Bayes Model
 url <- "https://assets.datacamp.com/production/course_2906/datasets/locations.csv"
 
-location <- read.csv(url)
-glimpse(location)
+locations <- read.csv(url)
+glimpse(locations)
 
-where9am <- location %>% 
+where9am <- locations %>% 
   filter(hour == 9) %>% 
-  select(daytype, location) 
+  select(daytype, weekday, location) 
 
 # Chapter 1. Computing Probabilities
 # The where9am data frame contains 91 days (thirteen weeks) worth of data in which Brett recorded his location at 9am each day as well as whether the daytype was a weekend or weekday. 
@@ -67,17 +67,28 @@ library(naivebayes)
 
 # Use naive_bayes() with a formula like y ~ x to build a model of location as a function of daytype. 
 # Build the location prediction model
-where9am
+table(where9am)
+
+where9am$location <- factor(where9am$location, 
+                            labels = c("appointment", "campus", "home", "office"))
+
 locmodel <- naive_bayes(location ~ daytype, data = where9am)
+
+
+thursday9am <- where9am %>% 
+  filter(weekday == "thursday") %>% 
+  select(daytype) %>% head(n = 1)
+
+saturday9am <- locations %>% 
+  filter(weekday == "saturday") %>% 
+  select(daytype) %>% head(n = 1)
 
 # Forecast the Thursday 9am location using predict() with the thursday9am object as newdata argument. 
 # Predict Thursday's 9am location
-thursday9am <- data.frame(daytype = "weekday")
 predict(locmodel, thursday9am)
 
 # Do the same for predicting the saturday9am location.
 # Predict Saturdays's 9am location
-saturday9am <- data.frame(daytype = "weekend")
 predict(locmodel, saturday9am)
 
 # Chapter 4. Examining "raw" probabilities
@@ -107,15 +118,111 @@ predict(locmodel, saturday9am, type = "prob")
 
 # Possible Answers
 # The events cannot occur at the same time. 
-  # -> If I flip a coin two times in a row, both flips are independent. 
+# -> If I flip a coin two times in a row, both flips are independent. 
 
 # A Venn diagram will always show no intersection. 
-  # -> The Venn diagram shows an intersection if the events can occur together. But, this doesn't mean they're dependent.
+# -> The Venn diagram shows an intersection if the events can occur together. But, this doesn't mean they're dependent.
 
 # Knowing the outcome of one event does not help predict the other. 
-  # -> Yes! One event is independent of another if knowing one doesen't give you information about how likely the other is. For example, knowing if it's raining in New York doesn't help you predict the weather in San Francisco. The weather events in the two cities are independent of each other. 
+# -> Yes! One event is independent of another if knowing one doesen't give you information about how likely the other is. For example, knowing if it's raining in New York doesn't help you predict the weather in San Francisco. The weather events in the two cities are independent of each other. 
 
 # At least one of the events is completely random. 
-  # -> All of the events you're learning about are random to a certain extent. 
+# -> All of the events you're learning about are random to a certain extent. 
 
 # The answer is (3). 
+
+# Chapter 6. Who are you calling naive?
+# The Naive Bayes algorithm got its name because it makes a "naive" assumption about event independence. 
+# What is the purpose of making this assumption? 
+# Possible Answers
+# Independent events can never have a joint probability of zero. 
+  # -> Independent events CAN have a joint probability of zero if they cannot occur together. 
+
+# The joint probability calculation is simpler for independent events. 
+  # -> Yes! The joint probability of independent events can be computed much more simply by multiplying their individual probabilities. 
+
+# Conditional probability is undefined for dependent events. 
+  # -> Conditional Probability is required for understanding event dependency. 
+
+# Dependent events cannot be used to make predictions. 
+  # ->  Dependent events are in fact very important for making predictions
+
+# Chapter 7. A more sophisticated location model
+# The locations dataset records Brett's location every hour for 13 weeks. Each hour, the tracking information includes the daytype (weekend or weekday) as well as the hourtype (morning, afternoon, evening, or night). 
+# Using this data, build a more sophisticated model to see how Brett's predicted location not only varies by the day of week but also by the time of day. 
+
+# Instructions
+# The dataset locations is already loaded in your workspace. 
+# Use the R formula interface to build a model where location depends on both daytype and hourtype. Recall that the function naive_bayes() takes 2 arguments: formula and data
+
+# Build a NB model of location
+locmodel <- naive_bayes(location ~ daytype + hourtype, data = locations)
+
+glimpse(locations)
+head(locations)
+
+weekday_afternoon <- locations %>% 
+  filter(daytype == "weekday" & hourtype == "afternoon") %>% 
+  select(daytype, hourtype) %>% 
+  head(n = 1)
+
+weekday_evening <- locations %>% 
+  filter(daytype == "weekday" & hourtype == "evening") %>% 
+  select(daytype, hourtype) %>% 
+  head(n = 1)
+
+weekend_afternoon <- locations %>% 
+  filter(daytype == "weekend" & hourtype == "afternoon") %>% 
+  select(daytype, hourtype) %>% 
+  head(n = 1)
+
+# Predict Brett's location on a weekday afternoon using the dataframe weekday_afternoon and the predict() function.
+# Predict Brett's location on a weekday afternoon
+predict(locmodel, newdata = weekday_afternoon)
+
+# Do the same for a weekday_evening.
+# Predict Brett's location on a weekday evening
+
+predict(locmodel, newdata = weekday_evening)
+
+# Chapter 8. Preparing for unforeseen circumstances
+# While Brett was tracking his location over 13 weeks, he never went into the office during the weekend. Consequently, the joint probability of P(office and weekend) = 0.
+
+# Explore how this impacts the predicted probability that Brett may go to work on the weekend in the future. Additionally, you can see how using the Laplace correction will allow a small chance for these types of unforeseen circumstances.
+
+# The "naivebayes" package is loaded into the workspace already
+# The Naive Bayes location model(locmodel) has already been built. 
+# The model locmodel is already in your workspace, along with the dataframe weekend_afternoon.
+
+# Use the locmodel to output predicted probabilities for a weekend afternoon by using the predict() function. Remember to set the type argument. 
+# Observe the predicted probabilities for a weekend afternoon
+predict(locmodel, newdata = weekend_afternoon, type = "prob")
+
+# Create a new naive Bayes model with the Laplace smoothing parameter set to 1. You can do this by setting the laplace argument in your call to naive_bayes(). Save this as locmodel2
+locmodel2 <- naive_bayes(location ~ daytype + hourtype, data = locations, laplace = 1)
+
+# See how the new predicted probabilities compare by using the predict() function on your new model.
+# Observe the new predicted probabilities for a weekend
+predict(locmodel2, newdata = weekend_afternoon, type = "prob")
+# Adding the Laplace correction allows for the small chance that Brett might go to the office on the weekend in the future.
+
+# Chapter 9. Understanding the Laplace correction
+# By default, the naive_bayes() function in the naivebayes package does not use the Laplace correction. What is the risk of leaving this parameter unset?
+# Possible Answers 
+# (1) Some potential outcomes may be predicted to be impossible. 
+  # -> The small probability added to every outcome ensures that they are all possible even if never previously observed. 
+
+# (2) The algorithm may have a divide by zero error. 
+  # -> A probabiltity of zero dosen't cause this error. 
+
+# (3) Naive Bayes will ignore features with zero values. 
+  # -> Naive Bayes does not actually exclude the zero values. 
+
+# (4) The model may not estimate probabilities for some cases. 
+  # -> The model will still estimate a probabiltiy for all cases. 
+
+# Chapter 10. Handling Numeric Predictors
+# Numeric data is often binned before it is used with Naive Bayes. Which of these is not an example of bining?
+# Ex) Age values recorded as "child" or "adult" categories
+# Ex) geographic coordinates recoded into geographic regions (West, East, etc.)
+# Ex) test scores divided into four groups by percentile. 
