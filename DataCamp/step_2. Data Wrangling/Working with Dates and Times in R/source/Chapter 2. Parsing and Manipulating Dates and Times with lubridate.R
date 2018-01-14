@@ -308,6 +308,3 @@ akl_hourly %>%
   count(day_hour) %>%
   filter(n != 2) %>% 
   arrange(desc(n))
-
-# 구서영 내 사랑, 영원히 사랑한다고~ 꺄~~~~
-# 구서영, 너 지훈이 얼마나 좋아하니??? 
