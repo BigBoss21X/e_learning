@@ -308,3 +308,5 @@ akl_hourly %>%
   count(day_hour) %>%
   filter(n != 2) %>% 
   arrange(desc(n))
+
+# 구서영 내 사랑, 영원히 사랑한다고~ 꺄~~~~
