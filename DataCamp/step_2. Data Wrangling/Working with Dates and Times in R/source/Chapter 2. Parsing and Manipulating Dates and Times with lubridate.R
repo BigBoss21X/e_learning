@@ -308,3 +308,4 @@ akl_hourly %>%
   count(day_hour) %>%
   filter(n != 2) %>% 
   arrange(desc(n))
+
