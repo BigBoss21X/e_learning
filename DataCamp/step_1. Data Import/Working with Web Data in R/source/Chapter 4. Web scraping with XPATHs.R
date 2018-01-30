@@ -114,7 +114,14 @@ print(wiki_table)
 # to remove all rows from df consisting of empty strings ("") in the column x.
 
 # Instructions 
+# (1) Rename the columns of wiki_table to "key" and "value" using colnames().
+# Rename the columns of wiki_table
+colnames(wiki_table) <- c("key", "value")
 
-# Rename the columns of wiki_table to "key" and "value" using colnames().
-# Remove the empty row from wiki_table using subset(), and assign the result to cleaned_table.
-# Print cleaned_table.
+# (2) Remove the empty row from wiki_table using subset(), and assign the result to cleaned_table.
+# Remove the empty row from wiki_table
+summary(wiki_table)
+cleaned_table <- subset(wiki_table, !key == "")
+
+# (3) Print cleaned_table.
+print(cleaned_table)
