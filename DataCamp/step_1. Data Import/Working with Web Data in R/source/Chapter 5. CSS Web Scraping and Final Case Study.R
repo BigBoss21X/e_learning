@@ -143,9 +143,62 @@ page_title
 # (1) Create a new data frame where key is the string "Full name" and value is our previously stored page_title.
 # Your code from earlier exercises
 wiki_table <- html_table(infobox_element)
-
+colnames(wiki_table) <- c("key", "value")
+cleaned_table <- subset(wiki_table, !key == "")
 
 # (2) Combine name_df with cleaned_table using rbind() and assign it to wiki_table2.
-
+# Create a dataframe for full name
+name_df <- data.frame(key = "Full name", value = page_title)
+# Combine name_df with cleaned_table
+wiki_table2 <- rbind(name_df, cleaned_table)
 
 # (3) Print wiki_table2.
+print(wiki_table2)
+
+#### Chapter 4. Reproducibility ####
+# Now you've figured out the process for requesting and parsing the infobox for the Hadley Wickham page, it's time to turn it into a function that does the same thing for anyone.
+
+# You've already done all the hard work! In the sample script we've just copied all your code from the previous three exercises, with only one change: we've wrapped it in the function definition syntax, and chosen the name get_infobox() for this function.
+
+# It doesn't quite work yet, the argument title isn't used inside the function. In this exercise you'll fix that, then test it out with some other personalities.
+
+# Instructions 
+# (1) Fix the function, by replacing the string "Hadley Wickham" with title, so that the title argument of the function will be used for the query.
+get_infobox <- function(title) {
+  pkgs <- c("httr", "rvest", "xml2")
+  sapply(pkgs, require, character.only = T)
+  base_url <- "https://en.wikipedia.org/w/api.php"
+  
+  # Change "Hadley Wickham" to title
+  query_params <- list(action = "parse", 
+                       page = title, 
+                       format = "xml")
+  
+  resp <- GET(url = base_url, query = query_params)
+  resp_xml <- content(resp)
+  
+  page_html <- read_html(xml_text(resp_xml))
+  infobox_element <- html_node(x = page_html, css =".infobox")
+  page_name <- html_node(x = infobox_element, css = ".fn")
+  page_title <- html_text(page_name)
+  
+  wiki_table <- html_table(infobox_element)
+  colnames(wiki_table) <- c("key", "value")
+  cleaned_table <- subset(wiki_table, !wiki_table$key == "")
+  name_df <- data.frame(key = "Full name", value = page_title)
+  wiki_table <- rbind(name_df, cleaned_table)
+  
+  wiki_table
+}
+
+# (2) Test get_infobox() with title = "Hadley Wickham".
+get_infobox(title = "Hadley Wickham")
+
+# (3) Now, try getting the infobox for "Ross Ihaka".
+get_infobox(title = "Ross Ihaka")
+
+# (4) Finally, try getting the infobox for "Grace Hopper".
+get_infobox(title = "Grace Hopper")
+
+# (5) Finally, try getting the infobox for "Donald Trump"
+get_infobox(title = "Donald Trump")
