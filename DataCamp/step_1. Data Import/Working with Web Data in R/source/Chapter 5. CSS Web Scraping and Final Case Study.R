@@ -202,3 +202,5 @@ get_infobox(title = "Grace Hopper")
 
 # (5) Finally, try getting the infobox for "Donald Trump"
 get_infobox(title = "Donald Trump")
+
+get_infobox(title = "Bill Clinton")
