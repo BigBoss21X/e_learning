@@ -175,9 +175,11 @@ class(data2)
 
 # from data to xts object
 data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data3)
 
 data3_xts <- read.zoo(data3)
-  
+data3_xts  
+
 # (1) Plot the third series in data with the title "Citigroup"
 # Plot the "citigroup" time series
 plot(data3_xts$citigroup, main = "Citigroup")
