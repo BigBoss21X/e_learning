@@ -1,0 +1,92 @@
+# Part 1. Capturing
+# Chapter 1. Capturing parts of a pattern
+In rebus, to denote a part of a regular expression you want to capture, you surround it with the function capture(). For example, a simple pattern to match an email address might be,
+
+email <- one_or_more(WRD) %R% 
+  "@" %R% one_or_more(WRD) %R% 
+  DOT %R% one_or_more(WRD)
+str_view("(wolverine@xmen.com)", pattern = email)  
+If you want to capture the part before the @, you simply wrap that part of the regular expression in capture(): email <- capture(one_or_more(WRD)) %R% "@" %R% one_or_more(WRD) %R% DOT %R% one_or_more(WRD) str_view("(wolverine@xmen.com)", pattern = email) The part of the string that matches hasn't changed, but if we pull out the match with str_match() we get access to the captured piece:
+
+str_match("(wolverine@xmen.com)", pattern =  email)  
+You'll explore this behavior with some more super hero email addresses.
+
+Instructions
+Add some more capture() calls to the email pattern, to capture the part after the @ but before the .; and the part after the ..
+Check that the whole email address is matched by using str_view() on hero_contacts with the email pattern.
+Use str_match() to pull out the match and capture the email pattern in hero_contacts.
+Print email_parts to confirm all parts are captured.
+Assign the third column of email_parts to host.
+
+# Capture part between @ and . and after .
+email <- capture(one_or_more(WRD)) %R% 
+  "@" %R% capture(one_or_more(WRD)) %R% 
+  DOT %R% capture(one_or_more(WRD))
+
+# Check match hasn't changed
+str_view(hero_contacts, pattern = email)
+
+# Pull out match and captures
+email_parts <- str_match(hero_contacts, pattern = email)
+
+# Print email_parts
+email_parts
+
+# Save host
+host <- email_parts[,3]
+host
+
+# Chapter 2. Pulling out parts of a phone number
+You can now go back to the phone number example from the previous chapter. You developed a pattern to extract the parts of string that looked like phone numbers, and now you have the skills to pull out the pieces of the number. Let's see if you can put your skills together to output the first phone number in each string in a common format.
+
+Instructions
+We've put the pieces of your pattern in your workspace, along with some text containing phone numbers in the variable contact.
+
+phone_pattern is the pattern you developed in the last chapter. Edit it to capture() each sequence of numbers.
+Use str_match() to grab all the pieces into phone_numbers.
+Put together the pieces with str_c() into the format (XXX) XXX-XXXX.
+
+contact <- c(
+  "Call me at 555-555-0191", 
+  "123 Main St", 
+  "(555) 555 0191", 
+  "Phone: 555.555.0191 Mobile: 555.555.0192"
+)
+
+# Add capture() to get digit parts
+three_digits <- DGT %R% DGT %R% DGT
+four_digits <- three_digits %R% DGT
+separator <- char_class("?:[-.()]| ")
+
+# Add capture() to get digit parts
+phone_pattern <- capture(three_digits) %R% zero_or_more(separator) %R% 
+  capture(three_digits) %R% zero_or_more(separator) %R%
+  capture(four_digits)
+
+# Pull out the parts with str_match()
+phone_numbers <- str_match(contact, phone_pattern)
+
+# Put them back together
+str_c(
+  "(",
+  phone_numbers[, 2],
+  ")",
+  phone_numbers[, 3],
+  "-",
+  phone_numbers[, 4])
+  
+# Great job! If you wanted to extract beyond the first phone number, e.g. The second phone number in the last string, you could use str_match_all(). But, like str_split() it will return a list with one component for each input string, and you'll need to use lapply() to handle the result.
+
+# Chapter 3. Extracting age and gender again
+You can now also take another look at your pattern for pulling out age and gender from the injury narratives. In the last chapter you took two steps to extract the pattern and then pull it apart. Take a go at doing it in one step!
+
+Instructions
+We've written out your whole pattern here rather than use the pattern variables you created, because you'll need to capture pieces that were inside those patterns.
+
+Add capture() to your pattern to pull out the age, unit and gender parts of the pattern.
+Use str_match() to pull them out of narratives, and take a look.
+That's pretty good, but it might be nice just to capture the first letter of the units, e.g. the Y or M. Alter your pattern to capture a Y or M, and then optional()ly match O or R.
+Check your new pattern still picks out the right pieces with str_view().
+Pull out the pieces with str_match().
+
+

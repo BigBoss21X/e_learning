@@ -1,0 +1,479 @@
+# Part 1. Introduction to stringr
+# Chapter 1. Putting strings together with stringr
+For your first stringr function, we'll look at str_c(), the c is short for concatentate, a function that works like paste(). It takes vectors of strings as input along with sep and collapse arguments.
+
+There are two key ways str_c() differs from paste(). First, the default separator is an empty string, sep = "", as opposed to a space, so it's more like paste0(). This is an example of a stringr function, performing a similar operation to a base function, but using a default that is more likely to be what you want. Remember in your pizza order, you had to set sep = "" multiple times.
+
+The second way str_c() differs to paste() is in its handling of missing values. paste() turns missing values into the string "NA", whereas str_c() propagates missing values. That means combining any strings with a missing value will result in another missing value.
+
+Let's explore this difference using your pizza order from the previous chapter.
+
+Instructions
+We've set up a new my_toppings vector that has a few missing values and taken the first step of creating our order.
+
+Print my_toppings_and to see what paste() did with the missing values.
+Repeat the paste() statement but instead use str_c(). You can save some typing by leaving off sep = "" since that is the default. Call this string my_toppings_str.
+Print my_toppings_str to see what str_c() does with the missing values.
+Take the next step in our order, by using paste() on my_toppings_and with collapse = ", ".
+Take the next step in our order, by using str_c() on my_toppings_str with collapse = ", ". See the difference: just one NA will make our entire result NA.
+
+rm(list = ls())
+library(stringr)
+my_toppings <- c("cheese", NA, NA)
+my_toppings_and <- paste(c("", "", "and "), my_toppings, sep = "")
+
+# Print my_toppings_and
+print(my_toppings_and)
+
+# Use str_c() instead of paste(): my_toppings_str
+my_toppings_str <- str_c(c("", "", "and "), my_toppings)
+
+# Print my_toppings_str
+print(my_toppings_str)
+
+# paste() my_toppings_and with collapse = ", "
+paste(my_toppings_and, collapse = ", ")
+
+# paste() my_toppings_str with collapse = ", "
+str_c(my_toppings_and, collapse = ", ")
+
+# Nice work! This behavior is nice because you learn quickly when you might have missing values, rather than discovering later weird "NA"s inside your strings. Another stringr function that is useful when you may have missing values, is str_replace_na() which replaces missing values with any string you choose.
+
+# Chapter 2. String length
+Our next stringr function is str_length(). str_length() takes a vector of strings as input and returns the number of characters in each string. For example, try finding the number of characters in Batman's name:
+
+str_length(c("Bruce", "Wayne"))
+This is very similar to the base function nchar() but you'll see in the exercises str_length() handles factors in an intuitive way, whereas nchar() will just return an error.
+
+Historically, nchar() was even worse, rather than returning an error if you passed it a factor, it would return the number of characters in the numeric encoding of the factor. Thankfully this behavior has been fixed, but it was one of the original motivations behind str_length().
+
+Take your first look at babynames by asking if girls' names are longer than boys' names.
+
+Instructions
+We've pulled out just the names from 2014, and created the vectors boy_names and girl_names for you. (If you want to learn about the filter() function, take the Data Manipulation in R with dplyr course!).
+
+Take a look at the boy_names vector, it's long, so use head() to see the first few elements.
+Use str_length() on boy_names to find the length of each name and save the result to boy_length.
+Take a look at the lengths. Again, use head(). Can you see the correspondence with boy_names?
+Find the length of all the girls' names. Call this girl_length.
+Find the difference in mean length between boys' and girls' names by subtracting the mean length of boys' names from that of girls' names.
+Confirm str_length() works on factors, by calling it on factor(boy_names). Again, you'll want to just look at the head().
+
+
+library(stringr)
+# install.packages("babynames")
+library(babynames)
+library(dplyr)
+
+# Extracting vectors for boys' and girls' names
+data("babynames")
+
+# Extracting vectors for boys' and girls' names
+babynames_2014 <- filter(babynames, year == 2014)
+str(babynames_2014)
+boy_names <- babynames_2014 %>% 
+              filter(sex == "M") %>% 
+              select(name)
+
+boy_names2 <- filter(babynames_2014, sex == "M")$name
+
+girl_names <- babynames_2014 %>% 
+                filter(sex == "F") %>% 
+                select(name)
+
+girl_names2 <- filter(babynames_2014, sex == "F")$name
+
+# Take a look at a few boy_names
+head(boy_names)
+head(boy_names2)
+head(girl_names)
+head(girl_names2)
+
+# Find the length of all boy_names
+boy_length <- str_length(boy_names)
+boy_length2 <- str_length(boy_names2)
+
+girl_length <- str_length(girl_names)
+girl_length2 <- str_length(girl_names2)
+
+# Find the difference in mean length
+mean(girl_length) - mean(boy_length)
+mean(girl_length2) - mean(boy_length2)
+
+# Confirm str_length() works with factors
+# head(str_length(factor(boy_names)))
+head(str_length(factor(boy_names2)))
+
+# Fantastic! The average length of the girls' names in 2014 is about 1/3 of a character longer. Just be aware this is a naive average where each name is counted once, not weighted by how many babies recevied the name. A better comparison might be an average weighted by the n column in babynames.
+
+# Chapter 3. Extracting substrings
+The str_sub() function in stringr extracts parts of strings based on their location. As with all stringr functions, the first argument, string, is a vector of strings. The arguments start and end specify the boundaries of the piece to extract in characters.
+
+For example, str_sub(x, 1, 4) asks for the substring starting at the first character, up to the fourth character, or in other words the first four characters. Try it with my Batman's name:
+
+str_sub(c("Bruce", "Wayne"), 1, 4)
+Both start and end can be negative integers, in which case, they count from the end of the string. For example, str_sub(x, -4, -1), asks for the substring starting at the fourth character from the end, up to the first character from the end, i.e. the last four characters. Again, try it with Batman:
+
+str_sub(c("Bruce", "Wayne"), -4, -1)
+To practice, you'll use str_sub() to look at popular first and last letters for names.
+
+Instructions
+We've set up the same boy_names and girl_names vectors from the last exercise in your workspace.
+
+Use str_sub() to extract the first letter of each name in boy_names. Save this to boy_first_letter.
+Use table() on boy_first_letter to count up how many names start with each letter. Can you see which is most popular?
+Repeat these steps, but now look at the last letter for boys' names.
+Again repeat, but now look at the first letter for girls' names.
+Finally, look at the last letter for girls' names.
+
+# Extract first letter from boy_names
+boy_first_letter <- str_sub(boy_names2, 1, 1)
+
+# Tabulate occurrences of boy_first_letter
+table(boy_first_letter)
+
+# Extract the last letter in boy_names, then tabulate
+boy_last_letter <- str_sub(boy_names2, -1, -1)
+table(boy_last_letter)
+
+# Extract the first letter in girl_names, then tabulate
+girl_first_letter <- str_sub(girl_names2, 1, 1)
+table(girl_first_letter)
+
+# Extract the last letter in girl_names, then tabulate
+girl_last_letter <- str_sub(girl_names2, -1, -1)
+table(girl_last_letter)
+
+# Great job! Did you see that "A" is the most popular first letter for both boys and girls, and the most popular last letter for girls. However, the most popular last letter for boys' names was "n". You might have seen substr() a base R function that is similar to str_sub(). The big advantage of str_sub() is the ability to use negative indexes to count from the end of a string.
+
+# Part 2. Hunting for matches
+# Lectures
+pizzas <- c("cheese", "pepperoni", "sausage and green peppers")
+
+str_detect(string = pizzas, pattern = "pepper")
+
+str_detect(string = pizzas, 
+           pattern = fixed("pepper"))
+
+str_subset(string = pizzas, 
+           pattern = fixed("pepper"))
+
+str_count(string = pizzas, 
+          pattern = fixed("pepper"))
+# Chapter 1. Detecting matches
+str_detect() is used to answer the question: Does the string contain the pattern? It returns a logical vector of the same length as that of the input vector string, with TRUE for elements that contain the pattern and FALSE otherwise.
+
+Let's take a look at a simple example where you have a vector of strings that represent pizza orders:
+
+pizzas <- c("cheese", "pepperoni", 
+  "sausage and green peppers")
+You can ask which orders contain the pattern "pepper", with
+
+str_detect(pizzas, 
+  pattern = fixed("pepper"))
+Try it out! You should get FALSE TRUE TRUE. Notice how both pepperoni and green peppers contain the pattern of interest.
+
+The output from str_detect() can be used to count the number of occurrences, or to subset out the strings that contain the pattern. You'll practice both to find the boys' names that contain "zz".
+
+Instructions
+Use str_detect() to find which boy_names contain "zz". Save the result to contains_zz.
+Examine the structure of contains_zz with str(). It should be a logical vector the same length as boy_names.
+To find out how many names in boy_names contain "zz", use sum() on contains_zz. Recall summing a logical vector counts how many are TRUE.
+To find the names in boy_names that contain "zz", subset boy_names using [ and contains_zz.
+We've also included boy_df in your workspace, a data frame that corresponds to the boys' names in 2014. Subset the rows of boy_df using contains_zz.
+
+# Look for pattern "zz" in boy_names
+contains_zz <- str_detect(boy_names, pattern = "zz")
+
+# Examine str() of contains_zz
+str(contains_zz)
+
+# How many names contain "zz"?
+sum(contains_zz == TRUE)
+
+# Which names contain "zz"?
+boy_names[contains_zz == TRUE]
+
+# Which rows in boy_df have names that contain "zz"?
+boy_df[contains_zz == TRUE, ]
+
+# That last example is another common use of str_detect() subsetting a data frame to rows where the values in a column contain the pattern of interest. In this case it lets us see these double-z names are pretty rare. For example, even the most popular, Uzziah, only accounted for 0.003% of boys born in 2014.
+
+# Chapter 2. Subsetting strings based on match
+Since detecting strings with a pattern and then subsetting out those strings is such a common operation, stringr provides a function str_subset() that does that in one step.
+
+For example, let's repeat our search for "pepper" in our pizzas using str_subset():
+
+pizzas <- c("cheese", "pepperoni", "sausage and green peppers")
+str_subset(pizzas, pattern = fixed("pepper"))
+We get a new vector of strings, but it only contains those original strings that contained the pattern.
+
+str_subset() can be easily confused with str_extract(). str_extract() returns a vector of the same length as that of the input vector, but with only the parts of the strings that matched the pattern. This won't be very interesting until we know about regular expressions, so we'll talk more about this in Chapter 3.
+
+For now, you'll repeat part of the last exercise using str_subset() and then find a few other interesting names.
+
+Instructions
+Find the boy_names that contain "zz", using str_subset().
+Find the girl_names that contain "zz".
+Find the girl_names that contain "U" and save into starts_U. Since the pattern matching is case sensitive, this will only be names that start with "U".
+Feed starts_U into another str_subset() that looks for "z". Combining multiple str_subset() calls is a way to find more complicated patterns.
+
+# Find boy_names that contain "zz"
+str_subset(boy_names, pattern = "zz")
+
+# Find girl_names that contain "zz"
+str_subset(girl_names, pattern = "zz")
+
+# Find girl_names that contain "U"
+starts_U <- str_subset(girl_names, pattern = fixed("U"))
+starts_U
+
+# Find girl_names that contain "U" and "z"
+str_subset(starts_U, pattern = "z")
+
+# Chapter 3. Counting matches
+Another stringr function that takes a vector of strings and a pattern is str_count(). str_count() answers the question "How many times does the pattern occur in each string?". It always returns an integer vector of the same length as that of the input vector.
+
+If you count the occurrences of "pepper" in your pizzas, you'll find no occurrences in the first, and one each in the second and third,
+
+pizzas <- c("cheese", "pepperoni", 
+  "sausage and green peppers")
+str_count(pizzas, pattern = fixed("pepper"))
+Perhaps a little more interesing is to count how many "e"s occur in each order
+
+str_count(pizzas, pattern = fixed("e"))
+You'll use str_count() to find some names with lots of repeated letters.
+
+Instructions
+Count the number of "a" in each girl_names, store in number_as.
+Count the number of "A" in each girl_names, store in number_As.
+Create histograms, use the hist() function, of number_as and number_As. Why is number_As only zero or one?
+Add together number_as and number_As to get total_as.
+Subset girl_names to only those names where total_as > 4.
+
+# Count occurrences of "a" in girl_names
+number_as <- str_count(girl_names2, pattern = fixed("a"))
+
+# Count occurrences of "A" in girl_names
+number_As <- str_count(girl_names2, pattern = fixed("A"))
+
+# Histograms of number_as and number_As
+hist(number_as)
+hist(number_As)
+
+# Find total "a" + "A"
+total_as <- number_as + number_As
+
+# girl_names with more than 4 a's
+girl_names2[total_as > 4]
+
+# Part 3. Splitting strings
+# Lectures
+# str_split returns a list
+str_split(string = "Tom & Jerry", pattern = " & ")
+
+chars <- c("Tom & Jerry", 
+           "Alvin & Simon & Theodore")
+
+str_split(chars, pattern = " & ") # compare below
+
+# str_split can returns a matrix
+str_split(chars, pattern = " & ", simplify = TRUE)
+
+# combining with lapply
+split_chars <- str_split(chars, pattern = " & ")
+lapply(split_chars, length)
+
+# Chapter 1. Parsing strings into variables
+A common use for str_split() is to pull apart raw string data into more useful variables. In this exercise you'll start by pulling apart a date range, something like "23.01.2017 - 29.01.2017", into separate variables for the start of the range, "23.01.2017", and the end of the range, "29.01.2017".
+
+Remember, if the simplify argument is FALSE (the default) you'll get back a list of the same length as that of the input vector. More commonly, you'll want to pull out the first piece (or second piece etc.) from every element, which is easier if you specify simplify = TRUE and get a matrix as output. You'll explore both of these output types in this exercise.
+
+Instructions
+Split date_ranges using " - " as a pattern, assign this to split_dates. Don't forget to wrap the pattern in fixed().
+Print split_dates. The result is a list with two elements, since date_ranges was a vector of length two.
+Now, split date_ranges again, but specify simplify = TRUE and n = 2. Print the result to see the difference. Now we get a matrix back, where each row corresponds to an element of date_ranges.
+Pull out the first column of split_dates_n into start_dates, and the second column into end_dates.
+Split start_dates into its day, month and year components. You are aiming for a three column matrix as the result.
+Now you're on your own. We've provided the both_names vector, listing a couple of famous statisticians. Your job is to pull out the first names and last names into separate vectors. You'll need to use an intermediate variable, both_names_split.
+
+date_ranges <- c("23.01.2017 - 29.01.2017", "30.01.2017 - 06.02.2017")
+
+# Split dates using " - "
+split_dates <- str_split(date_ranges, pattern = fixed(" - "))
+
+# Print split_dates
+print(split_dates)
+
+# Split dates with n and simplify specified
+split_dates_n <- str_split(date_ranges, pattern = fixed(" - "), simplify = TRUE, n = 2)
+split_dates_n
+
+# Subset split_dates_n into start_dates and end_dates
+start_dates <- split_dates_n[, 1]
+end_dates <- split_dates_n[, 2]
+
+# Split start_dates into day, month and year pieces
+str_split(start_dates, pattern = fixed("."), simplify = TRUE, n = 3)
+
+# Split both_names into first_names and last_names
+both_names <- c("Box, George", "Cox, David")
+both_names_split <- str_split(both_names, pattern = fixed(", "), simplify = TRUE, n = 2)
+both_names_split
+first_names <- both_names_split[,2]
+last_names <- both_names_split[,1]
+
+# Super splitting! Use the simplify = TRUE argument when you want to split each string into the same number of pieces.
+
+# Chapter 2. Some simple text statistics
+Generally, specifying simplify = TRUE will give you output that is easier to work with, but you'll always get n pieces (even if some are empty, "").
+
+Sometimes, you want to know how many pieces a string can be split into, or you want to do something with every piece before moving to a simpler structure. This is a situation where you don't want to simplify and you'll have to process the output with something like lapply().
+
+As an example, you'll be performing some simple text statistics on your lines from Alice's Adventures in Wonderland from Chapter 1. Your goal will be to calculate how many words are in each line, and the average length of words in each line.
+
+To do these calculations, you'll need to split the lines into words. One way to break a sentence into words is to split on an empty space " ". This is a little naive because, for example, it wouldn't pick up words separated by a newline escape sequence like in "two\nwords", but since this situation doesn't occur in your lines, it will do.
+
+Instructions
+We've put lines a vector with three strings, each corresponding to a line in your workspace.
+
+Split lines into words. Assign the resulting list to words.
+Use lapply() to apply length() to each element in words to count the number of words in each line.
+Use lapply() to apply str_length() to each element in words, to count the number of characters in each word. Assign this to word_lengths.
+Use lapply() to apply mean() to each element in word_lengths, to find the average word length in each line.
+
+# Chapter 2. Some simple text statistics
+
+line1 <- "The table was a large one, but the three were all crowded together at one corner of it:"
+line2 <- "\"No room! No room!\" they cried out when they saw Alice coming."
+line3 <- "\"There’s plenty of room!\" said Alice indignantly, and she sat down in a large arm-chair at one end of the table."
+
+lines <- c(line1, line2, line3)
+lines
+
+# Split lines into words
+words <- str_split(lines, pattern = " ")
+
+# Number of words per line
+lapply(words, length)
+
+# Number of characters in each word
+word_lengths <- lapply(words, str_length)
+
+# Average word length per line
+lapply(word_lengths, mean)
+
+# Part 4. Replacing matches in strings
+# Chapter 1. Replacing to tidy strings
+You've seen one common strategy to pull variables out of strings is to split the string based on a pattern. Sometimes, it's easier to just replace the parts you don't want with an empty string "". This is also a common strategy to clean strings up, for example, to remove unwanted punctuation or white space.
+
+In this exercise you'll pull out some numbers by replacing the part of the string that isn't a number, you'll also play with the format of some phone numbers. Pay close attention to the difference between str_replace() and str_replace_all().
+
+Instructions
+Keep the numeric part of ids, by replacing "ID#: " with an empty string "".
+Turn the ID strings to numbers using as.numeric(), assign the result to id_ints.
+Use str_replace() on phone_numbers to replace the "-" with a space, " ". Take a close look at the output, are there still some "-"s?
+Repeat the previous task but now use str_replace_all(). Notice the difference, all the "-"s are replaced!
+Reformat the phone numbers to use dots instead of dashes, i.e. in the format xxx.xxx.xxxx.
+
+# Chapter 1. Replacing to tidy strings
+ids <- c("ID#: 192", "ID#: 118", "ID#: 001")
+
+# Replace "ID#: " with ""
+id_nums <- str_replace(ids, pattern = "ID#: ", replacement = "")
+
+# Turn id_nums into numbers
+id_ints <- as.numeric(id_nums)
+
+# Some (fake) phone numbers
+phone_numbers <- c("510-555-0123", "541-555-0167")
+
+# Use str_replace() to replace "-" with " "
+str_replace(phone_numbers, pattern = "-", replacement = " ")
+
+# Use str_replace_all() to replace "-" with " "
+str_replace_all(phone_numbers, pattern = "-", replacement = " ")
+
+# Turn phone numbers into the format xxx.xxx.xxxx
+str_replace_all(phone_numbers, pattern = "-", replacement = ".")
+
+# Nice work! If you need to replace multiple different characters you could use str_replace_all() more than once, but you'll see a better way of specifying a range of characters to replace once you've learned about regular expressions in Chapter 3.
+
+# Chapter 2. Review
+You've covered a lot of stringr functions in this chapter:
+
+str_c()
+str_length()
+str_sub()
+str_detect()
+str_subset()
+str_count()
+str_split()
+str_replace()
+As a review we've got a few tasks for you to do with some DNA sequences. We've put three sequences, corresponding to three genes, from the genome of Yersinia pestis – the bacteria that causes bubonic plague – into the vector genes.
+
+Each string represents a gene, each character a particular nucleotide: Adenine, Cytosine, Guanine or Thymine.
+
+We aren't going to tell you which function to use. It's up to you to choose the right one and specify the needed arguments. Good luck!
+
+Instructions
+Find the number of nucleotides in each gene.
+Find the number of A's that occur in each gene.
+Return the sequences that contain the sequence "TTTTTT".
+Replace all the As in the sequences with a _.
+
+YPO0001 <- "TTAGAGTAAATTAATCCAATCTTTGACCCAAATCTCTGCTGGATCCTCTGGTATTTCATGTTGGATGACGTCAATTTCTAATATTTCACCCAACCGTTGAGCACCTTGTGCGATCAATTGTTGATCCAGTTTTATGATTGCACCGCAGAAAGTGTCATATTCTGAGCTGCCTAAACCAACCGCCCCAAAGCGTACTTGGGATAAATCAGGCTTTTGTTGTTCGATCTGTTCTAATAATGGCTGCAAGTTATCAGGTAGATCCCCGGCACCATGAGTGGATGTCACGATTAACCACAGGCCATTCAGCGTAAGTTCGTCCAACTCTGGGCCATGAAGTATTTCTGTAGAAAACCCAGCTTCTTCTAATTTATCCGCTAAATGTTCAGCAACATATTCAGCACTACCAAGCGTACTGCCACTTATCAACGTTATGTCAGCCAT"
+
+asnC <- "TTAAGGAACGATCGTACGCATGATAGGGTTTTGCAGTGATATTAGTGTCTCGGTTGACTGGATCTCATCAATAGTCTGGATTTTGTTGATAAGTACCTGCTGCAATGCATCAATGGATTTACACATCACTTTAATAAATATGCTGTAGTGGCCAGTGGTGTAATAGGCCTCAACCACTTCTTCTAAGCTTTCCAATTTTTTCAAGGCGGAAGGGTAATCTTTGGCACTTTTCAAGATTATGCCAATAAAGCAGCAAACGTCGTAACCCAGTTGTTTTGGGTTAACGTGTACACAAGCTGCGGTAATGATCCCTGCTTGCCGCATCTTTTCTACTCTTACATGAATAGTTCCGGGGCTAACAGCGAGGTTTTTGGCTAATTCAGCATAGGGTGTGCGTGCATTTTCCATTAATGCTTTCAGGATGCTGCGATCGAGATTATCGATCTGATAAATTTCACTCAT"
+
+asnA <- "ATGAAAAAACAATTTATCCAAAAACAACAACAAATCAGCTTCGTAAAATCATTCTTTTCCCGCCAATTAGAGCAACAACTTGGCTTGATCGAAGTCCAGGCTCCTATTTTGAGCCGTGTGGGTGATGGAACCCAAGATAACCTTTCTGGTTCTGAGAAAGCGGTACAGGTAAAAGTTAAGTCATTGCCGGATTCAACTTTTGAAGTTGTACATTCATTAGCGAAGTGGAAACGTAAAACCTTAGGGCGTTTTGATTTTGGTGCTGACCAAGGGGTGTATACCCATATGAAAGCATTGCGCCCAGATGAAGATCGCCTGAGTGCTATTCATTCTGTATATGTAGATCAGTGGGATTGGGAACGGGTTATGGGGGACGGTGAACGTAACCTGGCTTACCTGAAATCGACTGTTAACAAGATTTATGCAGCGATTAAAGAAACTGAAGCGGCGATCAGTGCTGAGTTTGGTGTGAAGCCTTTCCTGCCGGATCATATTCAGTTTATCCACAGTGAAAGCCTGCGGGCCAGATTCCCTGATTTAGATGCTAAAGGCCGTGAACGTGCAATTGCCAAAGAGTTAGGTGCTGTCTTCCTTATAGGGATTGGTGGCAAATTGGCAGATGGTCAATCCCATGATGTTCGTGCGCCAGATTATGATGATTGGACCTCTCCGAGTGCGGAAGGTTTCTCTGGATTAAACGGCGACATTATTGTCTGGAACCCAATATTGGAAGATGCCTTTGAGATATCTTCTATGGGAATTCGTGTTGATGCCGAAGCTCTTAAGCGTCAGTTAGCCCTGACTGGCGATGAAGACCGCTTGGAACTGGAATGGCATCAATCACTGTTGCGCGGTGAAATGCCACAAACTATCGGGGGAGGTATTGGTCAGTCCCGCTTAGTGATGTTATTGCTGCAGAAACAACATATTGGTCAGGTGCAATGTGGTGTTTGGGGCCCTGAAATCAGCGAGAAAGTTGATGGCCTGCTGTAA"
+
+genes <- c(YPO0001, asnC, asnA)
+
+# Find the number of nucleotides in each sequence
+str_length(genes)
+
+# Find the number of A's occur in each sequence
+str_count(genes, fixed("A"))
+
+# Return the sequences that contain "TTTTTT"
+str_subset(genes, fixed("TTTTTT"))
+
+# Replace all the "A"s in the sequences with a "_"
+str_replace_all(genes, pattern = "A", replacement = "-")
+
+# Chapter 3. Final challenges
+You've mastered using stringr functions on their own, but by combining multiple operations together in sequence you can achieve quite complicated manipulations.
+
+As the final exercise we want to expose you to the power of combining operations. You'll complete two tasks:
+
+You'll turn a vector of full names, like "Bruce Wayne", into abbreviated names like "B. Wayne". This requires combining str_split(), str_sub() and str_c().
+
+You'll compare how many boy names end in "ee" compared to girl names. This requires combining str_sub() with str_detect() along with the base function table().
+
+Instructions
+Task 1:
+
+Use str_split() to create a two column matrix with the first names in one column and the last names in the other. You'll be manipulating the first name before combining it back with the second name in the next few steps.
+Create an abbreviation of the first name, abb_first, by extracting just the first character with str_sub().
+Use str_c() to combine abb_first with ". " and the last name column to finish the task!
+Task 2:
+
+Use str_sub() to extract the last two letters from all_names.
+Create a logical, ends_in_ee that identifies whether the last_two_letters are ee, using str_detect().
+Subset the rows of babynames_2014 using ends_in_ee and keep only the sex column. (Use the $ notation to subset the sex column.)
+Apply table() to the result to complete the task!
+
+# --- Task 1 ----
+# Define some full names
+names <- c("Diana Prince", "Clark Kent")
+
+# Split into first and last names
+names_split <- str_split(names, pattern = fixed(" "), simplify = TRUE, n = 2)
+names_split
+
+# Extract the first letter in the first name
+abb_first <- str_sub(names_split[,1], 1, 1)
+
+# Combine the first letter ". " and last name
+str_c(abb_first, ". ", names_split[, 2])

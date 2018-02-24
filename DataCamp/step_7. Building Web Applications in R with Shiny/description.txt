@@ -1,0 +1,33 @@
+Web Applications in R with Shiny
+# Background
+# You are familiar with R as a programming language
+# You are familiar with the Tidyverse, specifically ggplot2 and dplyr. 
+
+# Help
+1. www.rstudio.com/resources/cheatsheets/
+2. shiny.rstudio.com
+
+# Tips
+1. Always runt the entire script, not just up to the point where you're developinc code
+2. Sometimes the best way to see what's wrong is to run the app and review the error 
+3. Watch out for commas! 
+
+# Anatomy of a Shiny App
+library(shiny)
+ui <- fluidPage() # User Interface controls the layout and appearance of app
+
+server <- function(input, output){} # Server function contains instructions needed to build app
+
+shinyApp(ui = ui, server = server) # Creates the Shiny App
+
+# Data, Let's build a simple movie browser app!
+# movies.Rdata, Data from IMDB and Rotten Tomatoes on random sample of 651 movies released in the US between 1970 and 2014
+
+# Anatomy of a Shiny App
+library(shiny)
+library("movies.Rdata") # Data used for this app
+ui <- fluidPage() # User Interface controls the layout and appearance of app
+
+server <- function(input, output){} # Server function contains instructions needed to build app
+
+shinyApp(ui = ui, server = server) # Creates the Shiny App

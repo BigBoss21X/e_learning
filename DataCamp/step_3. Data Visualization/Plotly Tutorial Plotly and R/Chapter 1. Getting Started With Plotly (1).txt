@@ -1,0 +1,30 @@
+# Chapter 1. Let's get started
+Meet Plotly.
+
+Plotly provides online graphing, analytics, and statistics tools. Using their technology anyone, including yourself, can make beautiful, interactive web-based graphs.
+
+In this short tutorial, you'll be introduced to the R package for plotly, a high-level interface to the open source JavaScript graphing library plotly.js.
+
+Plotly for R runs locally in your web browser or in the R Studio viewer. You can publish your charts to the web with plotly's web service. Let's get started by loading the plotly library.
+
+Instructions
+Load the plotly R package.
+Click Submit Answer to run the code
+# This will create your very first plotly visualization
+plot_ly(z = ~volcano)
+
+# Chapter 2. Plotly diamonds are forever
+
+You'll use several datasets throughout the tutorial to showcase the power of plotly. In the next exercises you will make use of the diamond dataset. A dataset containing the prices and other attributes of 1000 diamonds.
+
+Diamonds
+Don't forget:
+
+You're encouraged to think about how the examples can be applied to your own data-sets! Also, Plotly graphs are interactive. So make sure to experiment a bit with your plot: click-drag to zoom, shift-click to pan, double-click to autoscale.
+
+Instructions
+plotly has already been loaded for you.
+Take a look at the first plot_ly() graph. It plots the carat (FYI: the carat is a unit of mass. Hence it gives info on the weight of a diamond,) against the price (in US dollars). You don't have to change anything to this command. Tip: note the ~ syntax.
+In the second call of plot_ly(), change the color argument. The color should be dependent on the weight of the diamond.
+In the third call of plot_ly(), change the size argument as well. The size should be dependent on the weight of the diamond.
+

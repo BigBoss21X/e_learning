@@ -1,0 +1,512 @@
+# THE API url
+base_url <- "https://en.wikipedia.org/w/api.php"
+# (1) Create a list for the query parameters, setting action = "parse", page = "Hadley Wickham" and format = "xml".
+# Set query parameters
+query_params <- list(action = "parse",
+page = "Hadley Wickham",
+format = "xml")
+# (2) Use GET() to call the API by specifying url and query.
+resp <- GET(url = base_url, query = query_params)
+# (3) Parse the response using content().
+# Parse response
+resp_xml <- content(resp) # API stiyle
+# Good work! You now have a response, but can you find the HTML for the page in that response?
+#### Chapter 2. Extracting Information ####
+# Now we have a response from the API, we need to extract the HTML for the page from it. It turns out the HTML is stored in the contents of the XML response.
+# Take a look, by using xml_text() to pull out the text from the XML response:
+# xml_text(resp_xml)
+# In this exercise, you'll read this text as HTML, then extract the relevant nodes to get the infobox and page title.
+library(rvest)
+# Instructions
+# Code from the previous exercise has already been run, so you have resp_xml available in your workspace.
+# (1) Use read_html() to read the contents of the XML response(xml_text(resp_xml)) as HTML. # Read page contents as HTML
+page_html <- read_html(xml_text(resp_xml))
+page_html
+# (2) Use html_node() to extract the infobox element (having the class infobox) from page_html with a CSS selector.
+# Extract infobox element
+infobox_element <- html_node(page_html, css = ".infobox")
+# (3) Use html_node() to extract the page title element(having the class fn) from infobox_element with a CSS selector.
+# Extract page name element from infobox
+page_name <- html_node(infobox_element, css = ".fn")
+# (4) Extract the title text from page_name with html_text().
+# Extract page name as text
+page_title <- html_text(page_name)
+page_title
+# Fantastic! You have the info you need you just need to return it in a nice format.
+#### Chapter 3. Normalising Informaiton ####
+# Now it's time to put together the information in a nice format. You've already seen you can use html_table() to parse the infobox into a data frame. But one piece of important information is missing from that table: who the information is about!
+# In this exercise, you'll parse the infobox in a data frame, and add a row for the full name of the subject.
+# Instructions
+# (1) Create a new data frame where key is the string "Full name" and value is our previously stored page_title.
+# Your code from earlier exercises
+wiki_table <- html_table(infobox_element)
+colnames(wiki_table) <- c("key", "value")
+cleaned_table <- subset(wiki_table, !key == "")
+# (2) Combine name_df with cleaned_table using rbind() and assign it to wiki_table2.
+# Create a dataframe for full name
+name_df <- data.frame(key = "Full name", value = page_title)
+# Combine name_df with cleaned_table
+wiki_table2 <- rbind(name_df, cleaned_table)
+# (3) Print wiki_table2.
+print(wiki_table2)
+#### Chapter 4. Reproducibility ####
+# Now you've figured out the process for requesting and parsing the infobox for the Hadley Wickham page, it's time to turn it into a function that does the same thing for anyone.
+# You've already done all the hard work! In the sample script we've just copied all your code from the previous three exercises, with only one change: we've wrapped it in the function definition syntax, and chosen the name get_infobox() for this function.
+# It doesn't quite work yet, the argument title isn't used inside the function. In this exercise you'll fix that, then test it out with some other personalities.
+# Instructions
+# (1) Fix the function, by replacing the string "Hadley Wickham" with title, so that the title argument of the function will be used for the query.
+get_infobox <- function(title) {
+pkgs <- c("httr", "rvest", "xml2")
+sapply(pkgs, require, character.only = T)
+base_url <- "https://en.wikipedia.org/w/api.php"
+# Change "Hadley Wickham" to title
+query_params <- list(action = "parse",
+page = title,
+format = "xml")
+resp <- GET(url = base_url, query = query_params)
+resp_xml <- content(resp)
+page_html <- read_html(xml_text(resp_xml))
+infobox_element <- html_node(x = page_html, css =".infobox")
+page_name <- html_node(x = infobox_element, css = ".fn")
+page_title <- html_text(page_name)
+wiki_table <- html_table(infobox_element)
+colnames(wiki_table) <- c("key", "value")
+cleaned_table <- subset(wiki_table, !wiki_table$key == "")
+name_df <- data.frame(key = "Full name", value = page_title)
+wiki_table <- rbind(name_df, cleaned_table)
+wiki_table
+}
+# (2) Test get_infobox() with title = "Hadley Wickham".
+get_infobox(title = "Hadley Wickham")
+# (3) Now, try getting the infobox for "Ross Ihaka".
+get_infobox(title = "Ross Ihaka")
+# (4) Finally, try getting the infobox for "Grace Hopper".
+get_infobox(title = "Grace Hopper")
+# (5) Finally, try getting the infobox for "Donald Trump"
+get_infobox(title = "Donald Trump")
+get_infobox(title = "Bill Clinton")
+library(tidyverse)
+library(lubridate)
+url <- "https://assets.datacamp.com/production/course_2300/datasets/data_3_2.csv"
+data <- read_csv(url)
+glimpse(data)
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read_csv(url)
+glimpse(data)
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read_csv(url)
+glimpse(data)
+data <- read.csv(url)
+glimpse(data)
+data <- read.csv(url, sep = " ")
+glimpse(data)
+setwd("~/Documents/R_project/statistics/Git/e_learning/DataCamp/step_3. Data Visualization/Visualizing Time Series Data in R/data")
+write.csv(data, "Daily stocks for YHOO, MSFT, C, and DOW.csv", row.names = F)
+data <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data)
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read_csv(url, sep = " ")
+glimpse(data)
+data <- read.csv(url, sep = " ")
+glimpse(data)
+write.csv(data, "Daily stocks for YHOO, MSFT, C, and DOW.csv", row.names = F)
+data <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data)
+#### Part 0. Environment Settings ####
+# step 0. library load
+library(tidyverse)
+# step 1. data import
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read.csv(url, sep = " ")
+write.csv(data, "Daily stocks for YHOO, MSFT, C, and DOW.csv", row.names = F)
+glimpse(data)
+data2 <- read_csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data2)
+head(data)
+# Instructions
+# (1) Display the first few lines of the dataset data
+head(data)
+# (2) Display the column names of the dataset
+colnames(data)
+plot(data2$yahoo, main = "yahoo")
+plot(data2$Index, data2$yahoo, main = "yahoo", xlab = "date", ylab = "price")
+plot(data2$Index, data2$yahoo, main = "yahoo", xlab = "date", ylab = "price")
+plot(data2$microsoft, main = "microsoft")
+plot(data2$microsoft, sub = "Daily closing price since 2015", main = "microsoft", type = "h")
+# Change line color to red
+lines(data2$microsoft, col = "red", lwd = 2)
+# Plot two charts on same graphical window
+?par
+par(mfrow = c(2,1))
+plot(data$yahoo, main = "yahoo")
+plot(data$microsoft, main = "microsoft")
+par(mfrow = c(2,1), mex = 0.6, cex = 0.8)
+plot(data$yahoo, main = "yahoo")
+plot(data$microsoft, main = "microsoft")
+# (1) Plot the "microsoft" series and add the title "Stock prices since 2015"
+# Plot the "microsoft" series
+par(mfrow = c(1,1), mex = 0.6, cex = 0.8)
+plot(data2$microsoft, main = "Stock prices since 2015", type = "l")
+# Add the "dow_chemical" series in red
+lines(data2$dow_chemical, col = "red")
+# Add a Y axis on the right side of the chart
+axis(side = 4, at = pretty(data2$dow_chemical))
+# Add a legend in the bottom right corner
+legend(x = "bottomright", legend = c("microsoft", "dow_chemical"), col = c("black", "red"), lty = c(1,1))
+# Instructions
+library(xts)
+# Instructions
+install.packages("xts")
+# Instructions
+# install.packages("xts")
+library(xts)
+glimpse(data2)
+class(data2)
+# from data to xts object
+data3 <- read.zoo(data2)
+# from data to xts object
+data3 <- read.zoo(data2)
+setwd("~/Documents/R_project/statistics/Git/e_learning/DataCamp/step_3. Data Visualization/Visualizing Time Series Data in R/data")
+# from data to xts object
+data3 <- read.zoo("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+# from data to xts object
+data3 <- read.zoo("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+class(data2)
+# Instructions
+# install.packages("xts")
+library(xts)
+glimpse(data2)
+class(data2)
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", sep = ",")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", sep = "")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", sep = " ")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0)
+glimpse(data3)
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, sep = ",")
+glimpse(data3)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, sep = ",")
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, sep = ",", format = "%Y-%m-%d")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, sep = ",", format = "%Y/%m/%d")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, sep = ",")
+# from data to xts object
+data3 <- as.zoo(data2)
+class(data3)
+glimpse(data3)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- as.zoo(data)
+glimpse(data3)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", sep = ",")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 1)
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0, FUN = as.yearmon)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.zoo(file = "Daily stocks for YHOO, MSFT, C, and DOW.csv", index.column = 0)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+View(data3)
+data3_xts <- read.zoo(data3)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3$citigroup, main = "Citigroup")
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3_xts$citigroup, main = "Citigroup")
+data3_xts <- read.csv.zoo()
+data3_xts <- read.csv.zoo("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data3)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data3)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data3)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data3)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data3)
+data3_xts <- as.xts(data2)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data2)
+data3_xts <- as.xts(data)
+#### Part 0. Environment Settings ####
+# step 0. library load
+library(tidyverse)
+# Instructions
+# install.packages("xts")
+library(xts)
+glimpse(data2)
+rl <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read.csv(url, sep = " ")
+write.csv(data, "Daily stocks for YHOO, MSFT, C, and DOW.csv", row.names = F)
+glimpse(data)
+data2 <- read_csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data2)
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_1_1.csv"
+data <- read.csv(url, sep = " ")
+write.csv(data, "Daily stocks for YHOO, MSFT, C, and DOW.csv", row.names = F)
+glimpse(data)
+data2 <- read_csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data2)
+# Instructions
+# install.packages("xts")
+library(xts)
+glimpse(data2)
+class(data2)
+data3_xts <- as.xts(data)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+data3_xts <- as.xts(data)
+data3_xts <- as.xts(data3)
+class(data3)
+data3_xts <- read.zoo(data3)
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3_xts$citigroup, main = "Citigroup")
+# Create vert_line to identify January 4th, 2016 in citigroup
+# install.packages("xts")
+vert_line <- which(index(data3$citigroup) == as.Date("2016-01-04"))
+vert_line
+# Create vert_line to identify January 4th, 2016 in citigroup
+# install.packages("xts")
+vert_line <- which(index(data3_xts$citigroup) == as.Date("2016-01-04"))
+vert_line
+glimpse(data3_xts)
+# (3) Add a red vertical line at this date using abline(), .index(), and vert_line
+# Add a red vertical line using vert_line
+abline(v = .index(data3_xts$citigroup)[vert_line], col = "red")
+hori_line <- mean(data3_xts$citigroup)
+# Add a blue horizontal line using hori_line
+abline(h = hori_line, col = "blue")
+# Instructions
+install.packages("PerformanceAnalytics")
+# (1) Create an object called period containing the first three months of 2015
+# Create period to hold the 3 months of 2015
+period <- c("2015-01/2015-03")
+# Highlight the first three months of 2015
+chart.TimeSeries(data3$citigroup, period.areas = period)
+# Highlight the first three months of 2015
+chart.TimeSeries(data3_xts$citigroup, period.areas = period)
+# Instructions
+install.packages("PerformanceAnalytics")
+library(PerformanceAnalytics)
+# (1) Create an object called period containing the first three months of 2015
+# Create period to hold the 3 months of 2015
+period <- c("2015-01/2015-03")
+# Highlight the first three months of 2015
+chart.TimeSeries(data3_xts$citigroup, period.areas = period)
+# Highlight the first three months of 2015 in light grey
+chart.TimeSeries(data3$citigroup, period.areas = period, period.color = "lightgrey")
+# Highlight the first three months of 2015 in light grey
+chart.TimeSeries(data3_xts$citigroup, period.areas = period, period.color = "lightgrey")
+# Instructions
+# (1) Plot the "microsoft" series in data and add the title "Dividend date and amount"
+# Plot the microsoft series
+plot(data$microsoft, main = "Dividend date and amount")
+# Instructions
+# (1) Plot the "microsoft" series in data and add the title "Dividend date and amount"
+# Plot the microsoft series
+plot(data3$microsoft, main = "Dividend date and amount")
+# Instructions
+# (1) Plot the "microsoft" series in data and add the title "Dividend date and amount"
+# Plot the microsoft series
+plot(data3$microsoft, main = "Dividend date and amount")
+# Instructions
+# (1) Plot the "microsoft" series in data and add the title "Dividend date and amount"
+# Plot the microsoft series
+plot(data3_xts$microsoft, main = "Dividend date and amount")
+# (2) Without creating a new plot, add the "citigroup" series to the plot, and make its line "orange" and twice as thick as the default width
+# Add the citigroup series
+lines(data3_xts$citigroup, col = "orange", lwd = 2)
+# (3) Add an appropriately scaled Y axis on the right side of the chart for the "citigroup" data using axis() and pretty(), and make it orange
+# Add a new y axis for the citigroup series
+axis(side = 4, at = pretty(data3_xts$citigroup), col = "orange")
+# Same plot as the previous exercise
+plot(data3_xts$microsoft, main = "Dividend date and amount")
+lines(data3_xts$citigroup, col = "orange", lwd = 2)
+axis(side = 4, at = pretty(data$citigroup), col = "orange")
+# (2) Use the pre-loaded variables above to create the strings, micro and citi, to be used in the legend. # Create the two legend strings
+citi_div_value <- "$0.16"
+citi_div_date <- "13 Nov. 2016"
+# (2) Use the pre-loaded variables above to create the strings, micro and citi, to be used in the legend. # Create the two legend strings
+citi_div_value <- "$0.16"
+citi_div_date <- "13 Nov. 2016"
+micro <- paste0("Microsoft div. of ", citi_div_value, " on ", citi_div_date)
+micro_div_value <- "$0.39"
+micro_div_date <- "15 Nov. 2016"
+micro <- paste0("Microsoft div. of ", citi_div_value, " on ", citi_div_date)
+citi <- paste0("Citigroup div. of ", micro_div_value," on ", micro_div_date)
+# (3) Create the legend on the bottom right corner of the chart using the micro and citi strings you just created for the text, appropriate colors for the labels, and regular lines
+# Create the legend in the bottom right corner
+legend(x = "bottomright", legend = c(micro, citi), col = c("black", "oragne"), lty = c(1, 1))
+micro <- paste0("Microsoft div. of ", citi_div_value, " on ", citi_div_date)
+citi <- paste0("Citigroup div. of ", micro_div_value," on ", micro_div_date)
+# (3) Create the legend on the bottom right corner of the chart using the micro and citi strings you just created for the text, appropriate colors for the labels, and regular lines
+# Create the legend in the bottom right corner
+legend(x = "bottomright", legend = c(micro, citi), col = c("black", "oragne"), lty = c(1, 1))
+# (3) Create the legend on the bottom right corner of the chart using the micro and citi strings you just created for the text, appropriate colors for the labels, and regular lines
+# Create the legend in the bottom right corner
+legend(x = "bottomright", legend = c(micro, citi), col = c("black", "orange"), lty = c(1, 1))
+micro <- paste0("Microsoft div. of ", micro_div_value, " on ", micro_div_date)
+citi <- paste0("Citigroup div. of ", citi_div_value," on ", citi_div_date)
+# (3) Create the legend on the bottom right corner of the chart using the micro and citi strings you just created for the text, appropriate colors for the labels, and regular lines
+# Create the legend in the bottom right corner
+legend(x = "bottomright", legend = c(micro, citi), col = c("black", "orange"), lty = c(1, 1))
+setwd("~/Documents/R_project/statistics/Git/e_learning/DataCamp/step_3. Data Visualization/Visualizing Time Series Data in R/data")
+library(xts)
+library(tidyverse)
+data <- read.zoo("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+url <- "https://assets.datacamp.com/production/course_2300/datasets/dataset_2_1.csv"
+data <- read.csv(url)
+data <- read.csv(url, sep = " ")
+write.csv(data, "Daily returns for Apple.csv", row.names = F)
+apple <- read.csv("Daily returns for Apple.csv")
+data <- read.zoo(apple)
+plot(data$apple)
+plot(data)
+glimpse(apple)
+head(data)
+plot(data$Apple)
+data <- as.xts(apple)
+glimpse(apple)
+apple <- read_csv("Daily returns for Apple.csv")
+glimpse(apple)
+data <- read.zoo(apple)
+data <- read.zoo(apple)
+apple <- read.csv("Daily returns for Apple.csv")
+glimpse(apple)
+data <- read.zoo(apple)
+class(data)
+data
+as.xts(apple)
+apple$Index <- as.Date(apple$Index)
+data <- as.xts(apple)
+str(apple)
+read.zoo(apple)
+# from data to xts object
+data3 <- read.csv("Daily stocks for YHOO, MSFT, C, and DOW.csv")
+glimpse(data3)
+data3_xts <- read.zoo(data3)
+data3_xts
+glimpse(apple)
+apple <- read.csv("Daily returns for Apple.csv")
+glimpse(apple)
+read.zoo(apple)
+glimpse(data3)
+apple <- read.csv("Daily returns for Apple.csv")
+glimpse(apple)
+data <- read.zoo(apple)
+# instructions
+# (1) Plot data and name the chart "Apple stock price"
+plot(data)
+apple$count <- 1
+glimpse(apple)
+data <- read.zoo(apple)
+head(data)
+# instructions
+# (1) Plot data and name the chart "Apple stock price"
+plot(data$Apple)
+# instructions
+# (1) Plot data and name the chart "Apple stock price"
+plot(data$Apple, main = "Apple stock price")
+# instructions
+# (1) Plot data and name the chart "Apple stock price"
+plot(data$Apple, main = "Apple stock price", xlab = "date", ylab = "price")
+# (2) Apply ROC() to data to create a time series rtn containing Apple's daily returns
+library(TTR)
+# (2) Apply ROC() to data to create a time series rtn containing Apple's daily returns
+install.packages("TTR")
+library(TTR)
+# Create a time series called rtn
+rtn <- ROC(data)
+# (3) Plot data and rtn, in that order, as two new plots on a 2x1 graphical window
+# Plot Apple daily price and daily returns
+par(mfrow = c(1,2))
+plot(data$apple, main = "Apple stock price")
+plot(rtn)
+# (3) Plot data and rtn, in that order, as two new plots on a 2x1 graphical window
+# Plot Apple daily price and daily returns
+par(mfrow = c(1,2))
+plot(data$apple, main = "Apple stock price")
+plot(data$Apple, main = "Apple stock price")
+plot(rtn)
+# (3) Plot data and rtn, in that order, as two new plots on a 2x1 graphical window
+# Plot Apple daily price and daily returns
+par(mfrow = c(1,2))
+plot(data$Apple, main = "Apple stock price")
+plot(rtn)
+# Create a time series called rtn
+rtn <- ROC(data$Apple)
+# (3) Plot data and rtn, in that order, as two new plots on a 2x1 graphical window
+# Plot Apple daily price and daily returns
+par(mfrow = c(1,2))
+plot(data$Apple, main = "Apple stock price")
+plot(rtn)
+data3_xts <- read.zoo(data3)
+data3_xts
+# (1) Plot the third series in data with the title "Citigroup"
+# Plot the "citigroup" time series
+plot(data3_xts$citigroup, main = "Citigroup")
+# Create vert_line to identify January 4th, 2016 in citigroup
+# install.packages("xts")
+vert_line <- which(index(data3_xts$citigroup) == as.Date("2016-01-04"))
+vert_line
+glimpse(data3_xts)
+# (3) Add a red vertical line at this date using abline(), .index(), and vert_line
+# Add a red vertical line using vert_line
+abline(v = .index(data3_xts$citigroup)[vert_line], col = "red")
+# (4) Add a blue horizontal line at this average value using abline() and hori_line
+# Create hori_line to identify the average price of citigroup
+hori_line <- mean(data3_xts$citigroup)
+# Add a blue horizontal line using hori_line
+abline(h = hori_line, col = "blue")
+# Instructions
+# install.packages("PerformanceAnalytics")
+library(PerformanceAnalytics)
+# Highlight the first three months of 2015
+chart.TimeSeries(data3_xts$citigroup, period.areas = period)
