@@ -34,6 +34,8 @@ ui <- fluidPage(
         choices = c("imdb_rating", "imdb_num_votes", "critics_score", "audience_score", "runtime"), 
         selected = "imdb_num_votes")
       ),
+    
+    
     # outputs
     mainPanel(
       plotOutput(outputId = "scatterplot")
@@ -99,7 +101,8 @@ server <- function(input, output) {
   
   # Create the scatterplot object the plotOutput function is expecting
   output$scatterplot <- renderPlot({
-    ggplot(data = movies, aes_string(x = input$x, y = input$y,
+    ggplot(data = movies, aes_string(x = input$x, 
+                                     y = input$y,
                                      color = input$z)) +
       geom_point() + 
       theme_classic()
@@ -162,7 +165,7 @@ ui <- fluidPage(
   
   # Output
     mainPanel(
-      plotOutput(outputId = "scatterplot", width = "100%", height =   "400px") 
+      plotOutput(outputId = "scatterplot", width = "100%", height = "400px") 
     )
   )
 )
