@@ -37,6 +37,7 @@ ui <- fluidPage(
       plotOutput(outputId = "scatterplot"),
       textOutput(outputId = "avg_x"), # avg of x
       textOutput(outputId = "avg_y"), # avg of y
+      htmlOutput(outputId = "avgs"),
       verbatimTextOutput(outputId = "lmoutput") # regression output
     )
   )
@@ -61,6 +62,21 @@ server <- function(input, output) {
   output$avg_y <- renderText({
     avg_y <- movies %>% pull(input$y) %>% mean() %>% round(2)
     paste("Average", input$y, "=", avg_y)
+  })
+  
+  # Create avgs with renderUI
+  output$avgs <- renderUI({
+    # avg_x
+    mean_x <- movies %>% pull(input$x) %>% mean()
+    avg_x <- round(mean_x, 2)
+    # avg_y
+    mean_x <- movies %>% pull(input$x) %>% mean()
+    avg_x <- round(mean_x, 2)
+    # str_x and str_y
+    str_x <- paste("Average", input$x, "=", avg_x)
+    str_y <- paste("Average", input$y, "=", avg_x)
+    # HTML
+    HTML(paste(str_x, str_y, sep = '<br/>'))
   })
   
   # Create regression output

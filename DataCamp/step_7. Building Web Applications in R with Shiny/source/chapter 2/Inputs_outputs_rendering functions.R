@@ -642,9 +642,6 @@ ui <- fluidPage(
   ) # sidebarLayout
 ) # fluidPage 
 
-summary(movies$runtime)
-movies %>% pull(imdb_num_votes) %>% mean() %>% round(2)
-
 # Server
 server <- function(input, output) {
   
@@ -670,7 +667,6 @@ server <- function(input, output) {
   
   # Create regression output
   output$lmoutput <- renderPrint({
-    
     x <- movies %>% pull(input$x)
     y <- movies %>% pull(input$y)
     summ <- summary(lm(y ~ x, data = movies))
@@ -682,3 +678,96 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
   
 #### ~ Chapter 11. Creating and formatting HTML output ####
+library(shiny)
+library(dplyr)
+library(ggplot2)
+
+load(url("http://s3.amazonaws.com/assets.datacamp.com/production/course_4850/datasets/movies.Rdata"))
+
+# ui
+ui <- fluidPage(
+  
+  sidebarLayout(
+    
+    # inputs
+    sidebarPanel(
+      
+      # Select variable for y-axis
+      selectInput(
+        inputId = "y", 
+        label = "Y-axis:",
+        choices = c("imdb_rating", "imdb_num_votes", "critics_score", "audience_score", "runtime"), 
+        selected = "audience_score"
+      ), # selectInput - "y"
+      
+      selectInput(
+        inputId = "x", 
+        label = "X-axis:", 
+        choices = c("imdb_rating", "imdb_num_votes", "critics_score", "audience_score", "runtime"),
+        selected = "critics_score"
+      )
+      
+    ), # sidebarPanel
+    # outputs
+    mainPanel(
+      plotOutput(outputId = "scatterplot"), 
+      textOutput(outputId = "avg_x"), # avg of x
+      textOutput(outputId = "avg_y"), # avg of y
+      htmlOutput(outputId = "avgs"), # avgs
+      verbatimTextOutput(outputId = "lmoutput") # regression output
+    ) # mainPanel
+  ) # sidebarLayout
+) # fluidPage 
+
+# Server
+server <- function(input, output) {
+  
+  # Create scatterplot
+  output$scatterplot <- renderPlot({
+    ggplot(data = movies, aes_string(x = input$x, y = input$y)) + 
+      geom_point()
+  }) # scatterplot
+  
+  # Calculate average of x
+  output$avg_x <- renderText({
+    mean_x <- movies %>% pull(input$x) %>% mean()
+    avg_x <- round(mean_x, 2)
+    paste("Average", input$x, "=", avg_x)
+  })
+  
+  # Calculate average of y
+  output$avg_y <- renderText({
+    mean_y <- movies %>% pull(input$y) %>% mean()
+    avg_y <- round(mean_y, 2)
+    paste("Average", input$y, "=", avg_y)
+  })
+  
+  # Create htmlOutput
+  output$avgs <- renderUI({
+    # avg_x
+    mean_x <- movies %>% pull(input$x) %>% mean()
+    avg_x <- round(mean_x, 2)
+    # avg_y
+    mean_y <- movies %>% pull(input$y) %>% mean()
+    avg_y <- round(mean_y, 2)
+    
+    # str
+    str_x <- paste("Average", input$x, " = ", avg_x)
+    str_y <- paste("Average", input$y, " = ", avg_y)
+    
+    HTML(paste(str_x, str_y, sep = '<br/>'))
+  })
+  
+  # Create regression output
+  output$lmoutput <- renderPrint({
+    x <- movies %>% pull(input$x)
+    y <- movies %>% pull(input$y)
+    summ <- summary(lm(y ~ x, data = movies))
+    print(summ, digits = 3, signif.stars = FALSE)
+  })
+}
+
+# Create a shiny app object
+shinyApp(ui = ui, server = server)
+
+#### ~ 
