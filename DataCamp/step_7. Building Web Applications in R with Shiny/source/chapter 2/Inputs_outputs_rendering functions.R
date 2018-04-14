@@ -635,12 +635,50 @@ ui <- fluidPage(
     # outputs
     mainPanel(
       plotOutput(outputId = "scatterplot"), 
-      ___(outputId = ___) # regression output
-      ___(outputId = ___) # avg of x
-      ___(outputId = ___) # avg of y
+      textOutput(outputId = "avg_x"), # avg of x
+      textOutput(outputId = "avg_y"), # avg of y
+      verbatimTextOutput(outputId = "lmoutput") # regression output
     ) # mainPanel
   ) # sidebarLayout
 ) # fluidPage 
 
+summary(movies$runtime)
+movies %>% pull(imdb_num_votes) %>% mean() %>% round(2)
 
+# Server
+server <- function(input, output) {
   
+  # Create scatterplot
+  output$scatterplot <- renderPlot({
+    ggplot(data = movies, aes_string(x = input$x, y = input$y)) + 
+      geom_point()
+  }) # scatterplot
+  
+  # Calculate average of x
+  output$avg_x <- renderText({
+    mean_x <- movies %>% pull(input$x) %>% mean()
+    avg_x <- round(mean_x, 2)
+    paste("Average", input$x, "=", avg_x)
+  })
+  
+  # Calculate average of y
+  output$avg_y <- renderText({
+    mean_y <- movies %>% pull(input$y) %>% mean()
+    avg_y <- round(mean_y, 2)
+    paste("Average", input$y, "=", avg_y)
+  })
+  
+  # Create regression output
+  output$lmoutput <- renderPrint({
+    
+    x <- movies %>% pull(input$x)
+    y <- movies %>% pull(input$y)
+    summ <- summary(lm(y ~ x, data = movies))
+    print(summ, digits = 3, signif.stars = FALSE)
+  })
+}
+
+# Create a shiny app object
+shinyApp(ui = ui, server = server)
+  
+#### ~ Chapter 11. Creating and formatting HTML output ####

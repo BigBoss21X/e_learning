@@ -36,15 +36,15 @@ ui <- fluidPage(
     # Output(s)
     mainPanel(
       plotOutput(outputId = "scatterplot"),
-      ___(outputId = ___) # regression output
-      ___(outputId = ___) # avg of x
-      ___(outputId = ___) # avg of y
-      
+      textOutput(outputId = "avg_x"), # avg of x
+      textOutput(outputId = "avg_y"), # avg of y
+      verbatimTextOutput(outputId = "lmoutput") # regression output
     )
   )
+)
   
   # Server
-  server <- function(input, output) {
+server <- function(input, output) {
     
     # Create scatterplot
     output$scatterplot <- renderPlot({
@@ -75,4 +75,4 @@ ui <- fluidPage(
   }
   
   # Create a Shiny app object
-  shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server)
