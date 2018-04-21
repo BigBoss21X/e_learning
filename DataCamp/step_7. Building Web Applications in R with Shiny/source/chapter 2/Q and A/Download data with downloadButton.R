@@ -36,7 +36,7 @@ ui <- fluidPage(
     # Output(s)
     mainPanel(
       HTML("Select filetype and variables, then hit 'Download data'."),
-      ___("download_data", "Download data")
+      downloadButton("download_data", "Download data")
     )
   )
 )
@@ -45,20 +45,19 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   # Download file
-  output$___ <- ___(
+  output$download_data <- downloadHandler(
     filename = function() {
-      paste0("movies.", ___)
+      paste0("movies.", input$filetype)
     },
     content = function(file) { 
-      if(___ == "csv"){ 
+      if(input$filetype == "csv"){ 
         write_csv(movies %>% select(input$selected_var), file) 
       }
-      if(___ == "tsv"){ 
+      if(input$filetype == "tsv"){ 
         write_tsv(movies %>% select(input$selected_var), file) 
       }
     }
   )
-  
 }
 
 # Create a Shiny app object

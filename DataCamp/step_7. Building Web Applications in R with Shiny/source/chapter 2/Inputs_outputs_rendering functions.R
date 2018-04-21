@@ -632,6 +632,7 @@ ui <- fluidPage(
       )
       
     ), # sidebarPanel
+    
     # outputs
     mainPanel(
       plotOutput(outputId = "scatterplot"), 
@@ -647,12 +648,14 @@ server <- function(input, output) {
   
   # Create scatterplot
   output$scatterplot <- renderPlot({
+    # R 코드
     ggplot(data = movies, aes_string(x = input$x, y = input$y)) + 
       geom_point()
   }) # scatterplot
   
   # Calculate average of x
   output$avg_x <- renderText({
+    # R코드
     mean_x <- movies %>% pull(input$x) %>% mean()
     avg_x <- round(mean_x, 2)
     paste("Average", input$x, "=", avg_x)
@@ -770,4 +773,73 @@ server <- function(input, output) {
 # Create a shiny app object
 shinyApp(ui = ui, server = server)
 
-#### ~ 
+#### ~ 12. Download data with downloadButton #### 
+# Instructions
+# In the server function, add the name of the output for file download, the function for setting up a file download, and fill in other blanks. Looking in the help file for the function may be useful. 
+
+# In the UI, add the name of the function for displaying a button for downloading. 
+
+library(shiny)
+library(dplyr)
+library(readr)
+
+load(url("http://s3.amazonaws.com/assets.datacamp.com/production/course_4850/datasets/movies.Rdata"))
+
+# UI
+ui <- fluidPage(
+  
+  sidebarLayout(
+    
+    # inputs
+    sidebarPanel(
+      
+      # Select filetype
+      radioButtons(
+        inputId = "filetype", 
+        label = "Select filetype:", 
+        choices = c("csv", "tst"), 
+        selected = "csv"
+      ), 
+      
+      # Select variables to download
+      checkboxGroupInput(
+        inputId = "selected_var", 
+        label = "Select variables:", 
+        choices = names(movies), 
+        selected = c("title")
+      )
+      
+    ), # sidebar Panel
+    
+    # outputs
+    mainPanel(
+      HTML("Select filetype and variables, then hit 'Download data'."), 
+      downloadButton("download_data", "Download data")
+    )# mainPanel
+  ) # Layout
+) # fluidPage
+
+# Server
+server <- function(input, output) {
+  
+  # Download file
+  output$download_data <- downloadHandler(
+    # step 1. filename
+    filename = function(){
+      paste0("movies.", input$filetype)
+    },
+    # step 2. content (csv, tsv)
+    content = function(file) {
+      if(input$filetype == "csv") {
+        write_csv(movies %>% select(input$selected_var), file)
+      } # if
+      if(input$filetype == "tsv") {
+        write_tsv(movies %>% select(input$selected_var), file)
+      } # if
+    } # content
+  ) # download handler
+} # server
+
+# create Shiny app object
+shinyApp(ui = ui, server = server)
+
