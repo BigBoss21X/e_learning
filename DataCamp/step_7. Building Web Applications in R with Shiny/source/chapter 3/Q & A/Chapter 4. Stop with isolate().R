@@ -1,14 +1,21 @@
-#### Chapter 3. Find inconsistencies in what the app is reporting #### 
+#### Chapter 4. Stop with isolate() ####
+# Instructions 
+# Run the code and test out the functionality of the plot tile input. is the plot title updated immediately after you're done typing the title?
+
+# Modify the app using the isolate function so that the plot title only gets updated when one of the other inputs is changed. Note that it's best practice to place the argument of the isolate function in curly braces. 
+
+# Place your call to isolate around the toTitleCase() function. 
+
 library(shiny)
 library(ggplot2)
-library(dplyr)
+library(tools)
 load(url("http://s3.amazonaws.com/assets.datacamp.com/production/course_4850/datasets/movies.Rdata"))
 
 # UI
 ui <- fluidPage(
   sidebarLayout(
     
-    # Input(s)
+    # Input
     sidebarPanel(
       
       # Select variable for y-axis
@@ -41,61 +48,43 @@ ui <- fluidPage(
                               "Audience Rating" = "audience_rating"),
                   selected = "mpaa_rating"),
       
-      # Select which types of movies to plot
-      checkboxGroupInput(inputId = "selected_type",
-                         label = "Select movie type(s):",
-                         choices = c("Documentary", "Feature Film", "TV Movie"),
-                         selected = "Feature Film"),
+      # Set alpha level
+      sliderInput(inputId = "alpha", 
+                  label = "Alpha:", 
+                  min = 0, max = 1, 
+                  value = 0.5),
       
-      # Select sample size
-      numericInput(inputId = "n_samp", 
-                   label = "Sample size:", 
-                   min = 1, max = nrow(movies), 
-                   value = 3)
+      # Set point size
+      sliderInput(inputId = "size", 
+                  label = "Size:", 
+                  min = 0, max = 5, 
+                  value = 2),
+      
+      # Enter text for plot title
+      textInput(inputId = "plot_title", 
+                label = "Plot title", 
+                placeholder = "Enter text to be used as plot title")
+      
     ),
     
-    # Output(s)
+    # Output:
     mainPanel(
-      plotOutput(outputId = "scatterplot"),
-      uiOutput(outputId = "n")
+      plotOutput(outputId = "scatterplot")
     )
   )
 )
 
-# Server
-server <- function(input, output) {
+# Define server function required to create the scatterplot-
+server <- function(input, output, session) {
   
-  # Create a subset of data filtering for selected title types
-  movies_subset <- reactive({
-    req(input$selected_type)
-    filter(movies, title_type %in% input$selected_type)
-  })
-  
-  # Create new df that is n_samp obs from selected type movies
-  movies_sample <- reactive({ 
-    req(input$n_samp)
-    sample_n(movies_subset(), input$n_samp)
-  })
-  
-  # Create scatterplot object the plotOutput function is expecting
+  # Create scatterplot object the plotOutput function is expecting 
   output$scatterplot <- renderPlot({
-    ggplot(data = movies_sample(), aes_string(x = input$x, y = input$y, color = input$z)) +
-      geom_point()
+    ggplot(data = movies, aes_string(x = input$x, y = input$y, color = input$z)) +
+      geom_point(alpha = input$alpha, size = input$size) +
+      labs(title = toTitleCase(input$plot_title) )
   })
   
-  # Print number of movies plotted
-  output$n <- renderUI({
-    types <- movies_subset()$title_type %>% 
-      factor(levels = input$selected_type) 
-    counts <- table(types)
-    HTML(paste("There are", counts, input$selected_type, "movies plotted in the plot above. <br>"))
-  })
 }
 
 # Create a Shiny app object
 shinyApp(ui = ui, server = server)
-
-#### Instructions ####
-# Run the sample code and view the app. Do the number of movies plotted match the number cited in the text below the app?
-
-# If not, fix the app code by updating the text at the bottom of the app.
