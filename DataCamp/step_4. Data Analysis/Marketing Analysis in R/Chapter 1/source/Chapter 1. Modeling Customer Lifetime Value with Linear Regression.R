@@ -50,6 +50,7 @@ ChurnData <- "https://assets.datacamp.com/production/course_6027/datasets/churn_
 salesData <- "https://assets.datacamp.com/production/course_6027/datasets/salesData.csv"
 salesData_2months <- "https://assets.datacamp.com/production/course_6027/datasets/salesDataMon2To4.csv"
 SurvivalData <- "https://assets.datacamp.com/production/course_6027/datasets/survivalDataExercise.csv"
+
 DefaultData <- "https://assets.datacamp.com/production/repositories/1861/datasets/0b0772985a8676c3613e8ac2c6053f5e60a3aebd/defaultData.csv"
 load("newsData.rdata")
 
