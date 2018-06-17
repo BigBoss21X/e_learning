@@ -233,3 +233,59 @@ payoffMatrix
 
 #### Lecture 4. Out-of-sample validation and cross validation ####
 
+#### ~ Chapter 9. Assessing out-of-sample model fit ####
+# You now know that it makes more sense to look at the out-of-sample model fit than the in-sample fit. In this exercise, you therefore want to come up with an out-of-sample accuracy measure.
+
+# Before, you will have to do some preparational steps, though. Take defaultData again. logitModelNew is already loaded in your environment.
+
+# Be aware that for a complete analysis you would always have to compare different model candidates also (and especially) using out-of-sample data.
+
+# The in-sample accuracy - using the optimal threshold of 0.3 - is 0.7922901. Make sure you understand if there is overfitting.
+
+# Instructions
+# First, split the dataset randomly into training and test set. The training set shall contain 2/3 of the overall data. 
+# Split data in train and test set 
+set.seed(534381)
+
+defaultData$isTrain <- rbinom(nrow(defaultData), 1, 0.66)
+
+train <- subset(defaultData, defaultData$isTrain == 1)
+test <- subset(defaultData, defaultData$isTrain == 0)
+
+# Then, quickly run the model and call it logitTrainNew. Use the given formula
+logitTrainNew <- glm(formulaLogit, family = "binomial", data = train)
+
+test$predNew <- predict(logitTrainNew, type = "response", newdata = test) # Predictions
+
+# Make predictions on the test set and then calculate the out-of-sample accuracy with the help of a confusion matrix. 
+# Out-of-sample confusion matrix and accuracy
+confMatrixModelNew <- confusion.matrix(test$PaymentDefault, test$predNew, threshold = 0.3)
+
+# Compare the out-of-sample accuracy to the in-sample value, given above.
+sum(diag(confMatrixModelNew)) / sum(confMatrixModelNew)
+
+# Good Job! Knowing how to validate in an out-of-sample manner is essential for reliable results! In case you experience overfitting in the future you would have to go back to modeling and build smaller models. 
+
+#### ~ Chapter 10. Cross Validation ####
+
+# Cross validation is a clever method to avoid overfitting as you could see. In this exercise you are going to calculate the cross validated accuracy.
+
+# You can go right ahead, the neccessary data and models are waiting for you. You can find the accuracy function in the first few lines of code. Try it out!
+
+# Instructions #
+# Use a 6-fold cross validation and calcuate the accuracy for the models. The function you need is cv.glm() of the book package 
+library(boot)
+# Accuracy function 
+costAcc <- function(r, pi = 0) {
+  cm <- confusion.matrix(r, pi, threshold = 0.3)
+  acc <- sum(diag(cm)) / sum(cm)
+  return(acc)
+}
+
+
+# Compare your accuracy of the cross validation to the one of the in-sample validation. Remember, it was 0.7922901.
+# Cross validated accuracy for logitModelNew
+set.seed(534381)
+cv.glm(defaultData, logitModelNew, cost = costAcc, K = 6)$delta[1]
+
+# Well done! You would know which model to choose, right? Our Session is coming to an end. I hope you learned a lot about churn prevention and logistic regression. Join me in the next chapter for more exciting data science!
