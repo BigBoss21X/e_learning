@@ -4,7 +4,7 @@
 # (3) Odds
 # (4) Probability to churn 
 
-#### Quiz. Application Churn Prevention ####
+#### ~ Quiz. Application Churn Prevention ####
 # Let's begin with some basics. Remember the customer churn case from the video. What is the main incentive for an online shop to do churn prevention?
 
 # Possible Answers
@@ -15,7 +15,7 @@
 # The answer is (3)
 # Churn Prevention is a measure to ensure that customers visit the online shop again. 
 
-#### Chapter 1. Data Discovery #### 
+#### ~ Chapter 1. Data Discovery #### 
 # For your coding exercises you will use the theory that you just saw and apply it to a new dataset. This dataset is about bank customers and will be used to predict if customers will default on their loan payments.
 # There are very helpful functions in R to get an overview of the dataset at hand. For now you will only look at summary() and str().
 # Necessary packages are loaded and the dataset defaultData is already present in your working environment.
@@ -50,7 +50,7 @@ glimpse(defaultData)
 ggplot(defaultData, aes(x = PaymentDefault)) + 
   geom_histogram(stat = "count")
 
-#### Chapter 2. Peculiarities of the dependent variable ####
+#### ~ Chapter 2. Peculiarities of the dependent variable ####
 # You've got some insights from me about the mathematics behind a logistic regression. Now, I want to know how you can transform the outcome variable (taking only values of 0 and 1) in order to examine a linear influence of the explanatory variables?
 
 # Possible Answers 
@@ -97,7 +97,7 @@ coefsexp
 
 # The answer is The probability of finding this coefficient's value is only 5%, given that our null hypothesis (the respective coefficient is equal to zero) is true. 
 
-#### Chapter 4. Model Specification ####
+#### ~ Chapter 4. Model Specification ####
 
 # The stepAIC() function gives back a reduced model, as you just saw in the previous video. Now you want to apply this method to the exercise dataset defaultData.
 
@@ -132,7 +132,7 @@ formulaLogit
 
 #### Lecture 3. In Sample model fit and thresholding ####
 
-#### Chapter 5. In-Sample fit full model ####
+#### ~ Chapter 5. In-Sample fit full model ####
 # It is coding time again, which means coming back to the exercise dataset defaultData.
 
 # You now want to know how your model performs by calculating the accuracy. In order to do so, you first need a confusion matrix. 
@@ -161,7 +161,7 @@ accuracyFull
 
 # Awesome! You got it! But you have only calculated the accuracy for one of your two models. In the next step, do it for the other one as well. 
 
-#### Chapter 6. In-Sample fit restricted model ####
+#### ~ Chapter 6. In-Sample fit restricted model ####
 
 # You calculated the accuracy for logitModelFull. It's very important to do that with all your model candidates.
 
@@ -190,7 +190,7 @@ accuracyFull
 
 # You calculated the accuracy measures for both model candidates. As the accuracy values are approximately the same, let's continue with the smaller model logitModelNew. 
 
-#### Chapter 7. Finding the optimal threshold ####
+#### ~ Chapter 7. Finding the optimal threshold ####
 # You now know that the choice of the threshold is essential for your results. Check empirically which threshold is most reasonable in this case.
 
 # The SDMTools package is already loaded. Additionally, we specified the dataframe payoffMatrix that contains a column with the thresholds, 0.1, 0.2, ..., 0.5 for you. From the last exercise we know that the restricted model was the best one. So only calculate the optimal threshold for that model. 
@@ -227,7 +227,7 @@ confMatrix <- confusion.matrix(
 # Remember the threshold that leads to the highest payoff. 
 payoffMatrix
 
-#### Chapter 8. Danger of Overfitting ####
+#### ~ Chapter 8. Danger of Overfitting ####
 # What is the main reason of overfitting?
 # Answer: The model is highly tailored to the given data and not suited for explaining new data. 
 
