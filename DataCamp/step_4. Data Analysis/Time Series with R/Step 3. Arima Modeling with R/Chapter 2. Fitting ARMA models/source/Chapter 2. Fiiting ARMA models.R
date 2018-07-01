@@ -270,10 +270,10 @@ sarima(dl_varve, p = 1, d = 0, q = 1)
 oil_returns <- diff(log(oil))
 
 # Plot oil_returns and notice that there are a couple of outliers prior to 2004. Convince yourself that the returns are stationary.
-plot(oil_returns)
+plot(oil_returns, main = "oil_returns")
 
 # Plot the sample ACF and PACF of the oil_returns using acf2() from the astsa package.
-plot(acf2(oil_returns))
+plot(acf2(oil_returns), main = "oil_returns acf2()")
 
 # From the P/ACF pair, it is apparent that the correlations are small and the returns are nearly noise. But it could be that both the ACF and PACF are tailing off. If this is the case, then an ARMA(1,1) is suggested. Fit this model to the oil returns using sarima(). Does the model fit well? Can you see the outliers in the residual plot?
 sarima(oil_returns, p = 1, d = 0, q = 1)
