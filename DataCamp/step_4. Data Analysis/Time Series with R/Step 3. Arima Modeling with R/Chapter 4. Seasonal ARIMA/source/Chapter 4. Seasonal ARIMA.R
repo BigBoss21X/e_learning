@@ -126,3 +126,97 @@ sarima(unemp, p = 2, d = 1, q = 0, P = 0, D = 1, Q = 1, S = 12)
 # Suggest and fit a model using sarima(). Check the residuals to ensure appropriate model fit.
 
 # Well done! As always, keep a close eye on the output from your sarima() command to get a feel for the fit of your model.
+
+#### ~ Chapter 5. Data Analysis - Commodity Prices ####
+# Making money in commodities is not easy. Most commodities traders lose money rather than make it. The package astsa includes the data set chicken, which is the monthly whole bird spot price, Georgia docks, US cents per pound, from August, 2001 to July, 2016.
+
+# The astsa package is preloaded in your R console and the data are plotted for you, note the trend and seasonal components.
+
+# First, you will use your skills to carefully fit an SARIMA model to the commodity. Later, you will use the fitted model to try and forecast the whole bird spot price.
+
+# After removing the trend, the sample ACF and PACF suggest an AR(2) model because the PACF cuts off after lag 2 and the ACF tails off. However, the ACF has a small seasonal component remaining. This can be taken care of by fitting an addition SAR(1) component.
+
+# By the way, if you are interested in analyzing other commodities from various regions, you can find many different time series at index mundi. # https://www.indexmundi.com/commodities/
+
+# Instructions 
+
+# (1) Plot the differenced (d = 1) data diff(chicken). Note that the trend is removed and note the seasonal behavior.
+plot(diff(chicken))
+
+# (2) Plot the sample ACF and PACF of the differenced data to lag 60 (5 years). Notice that an AR(2) seems appropriate but there is a small but significant seasonal component remaining in the detrended data.
+# Plot P/ACF pair of differenced data to lag 60
+acf2(diff(chicken), max.lag = 60)
+
+# (3) Fit an ARIMA(2,1,0) to the chicken data to see that there is correlation remaining in the residuals.
+# Fit ARIMA(2,1,0) to chicken - not so good
+sarima(chicken, p = 2, d = 1, q = 0)
+
+# (4) Fit an SARIMA(2,1,0)x(1,0,0)12 and notice the model fits well.
+# Fit SARIMA(2,1,0,1,0,0,12) to chicken - that works
+sarima(chicken, p = 2, d = 1, q = 0, P = 1, D = 0, Q = 0, S = 12)
+
+# Well done! You have successfully fit an ARIMA model to a commodity. If you are interested in analyzing other commodities from various regions, you can find many different time series at index mundi
+
+#### ~ Chapter 6. Data Analysis - Birth Rate ####
+# Now you will use your new skills to carefully fit an SARIMA model to the birth time series from astsa. The data are monthly live births (adjusted) in thousands for the United States, 1948-1979, and includes the baby boom after WWII.
+
+# The birth data are plotted in your R console. Note the long-term trend (random walk) and the seasonal component of the data.
+
+# Instructions 
+# (1) Use diff() to difference the data (d_birth). Use acf2() to view the sample ACF and PACF of this data to lag 60. Notice the seasonal persistence.
+# Plot P/ACF to lag 60 of differenced data
+d_birth <- diff(birth)
+acf2(dd_birth, max.lag = 60)
+
+# (2) Use another call to diff() to take the seasonal difference of the data. Save this to dd_birth. Use another call to acf2() to view the ACF and PACF of this data, again to lag 60. Conclude that an SARIMA(0,1,1)x(0,1,1)12 model seems reasonable.
+# Plot P/ACF to lag 60 of seasonal differenced data
+dd_birth <- diff(d_birth, lag = 12)
+acf2(dd_birth, max.lag = 60)
+
+# (3) Fit the SARIMA(0,1,1)x(0,1,1)12 model. What happens?
+sarima(birth, p = 0, d = 1, q = 1, P = 0, D = 1, Q = 1, S = 12)
+
+# (4) Add an additional AR (nonseasonal, p = 1) parameter to account for additional correlation. Does the model fit well?
+sarima(birth, p = 1, d = 1, q = 1, P = 0, D = 1, Q = 1, S = 12)
+
+# Well done! The residual analysis from the first fit indicated that the residuals were not white noise. Hence, it was necessary to include an additional nonseasonal AR term to account for the extra correlation.
+
+#### Lecture 3. Forecasting Seasonal ARIMA ####
+# Forecasting ARIMA Processes
+# Once model is chosen, forecasting is easy because the model describes how the dynamics of the time series behave over time
+
+# Simply continue the model dynamics into the future
+
+# In the astsa package, use sarima.for() for forecasting
+
+#### ~ Chapter 7. Forecasting Monthly Unemployment ####
+# Previously, you fit an SARIMA(2,1,0, 0,1,1)12 model to the monthly US unemployment time series unemp. You will now use that model to forecast the data 3 years.
+
+# The unemp data are preloaded into your R workspace and plotted on the right.
+
+# INSTRUCTIONS
+
+# Begin by again fitting the model used earlier in this chapter (using the sarima() command). Recheck the parameter significance and residual diagnostics.
+# Fit your previous model to unemp and check the diagnostics
+sarima(unemp, p = 2, d = 1, q = 0, P = 0, D = 1, Q = 1, S = 12)
+
+# Use sarima.for() to forecast the data 3 years into the future.
+sarima.for(unemp, n.ahead = 36, p = 2, d = 1, q = 0, P = 0, D = 1, Q = 1, S = 12)
+
+#### ~ Chatper 8. How Hard is it to Forecast Commodity Prices? ####
+# As previously mentioned, making money in commodities is not easy. To see a difficulty in predicting a commodity, you will forecast the price of chicken to five years in the future. When you complete your forecasts, you will note that even just a few years out, the acceptable range of prices is very large. This is because commodities are subject to many sources of variation.
+
+# Recall that you previously fit an SARIMA(2,1,0, 1,0,0)12 model to the monthly US chicken price series chicken. You will use this model to calculate your forecasts.
+
+# The astsa package is preloaded for you and the monthly price of chicken data (chicken) are plotted on the right.
+
+# INSTRUCTIONS
+
+# (1) Refit the SARIMA model from the earlier exercise and convince yourself that it fits well. Check parameter significance and residual diagnostics.
+sarima(chicken, p = 2, d = 1, q = 0, P = 1, D = 0, Q = 0, S = 12)
+
+# (2) Use sarima.for() to forecast the data 5 years into the future.
+# Forecast the chicken data 5 years into the future
+sarima.for(chicken, p = 2, d = 1, q = 0, P = 1, D = 0, Q = 0, S = 12, n.ahead = 60)
+
+# Well done! You have now mastered the process of detrending your time series data, exploring the qualities of the data to determine an appropriate model, fitting and adjusting a model, and even forecasting based on the model!
