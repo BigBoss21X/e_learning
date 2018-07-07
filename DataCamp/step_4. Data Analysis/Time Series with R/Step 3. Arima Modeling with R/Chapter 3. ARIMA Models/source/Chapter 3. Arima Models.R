@@ -47,7 +47,7 @@ plot(acf2(diff(x)))
 
 # Here, we generated 250 observations from the ARIMA(2,1,0) model with drift given by
 
-# Yt=1+1.5Yt−1−.75Yt−2+Wt
+# Yt=1+1.5Y(t−1)−.75Yt−2+Wt
 
 # where Yt=∇Xt=Xt−Xt−1.
 
