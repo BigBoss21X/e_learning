@@ -14,7 +14,7 @@
 # For sampled units, we have the values and survey weights. 
 # How do I incorporate the weights?
 
-#### Quiz Survey Weights ####
+#### ~ Quiz Survey Weights ####
 # Let's look at the data from the Consumer Expenditure Survey and familiarize ourselves with the survey weights. Use the glimpse() function in the dplyr package to look at the ce dataset and check out the weights column, FINLWT21. ce and dplyr are pre-loaded.
 
 # Interpret the meaning of the third observation's survey weight.
@@ -33,7 +33,7 @@ glimpse(ce$FINLWT21)
 
 # Great! Now that we know what the weights mean, let's dig a little deeper!
 
-#### Chapter 1. Visualizing the weights #### 
+#### ~ Chapter 1. Visualizing the weights #### 
 # Graphics are a much better way of visualizing data than just staring at the raw data frame! Therefore, in this activity, we will load the data visualization package ggplot2 to create a histogram of the survey weights.
 
 # Instructions 
@@ -58,10 +58,45 @@ library(survey)
 
 # cluster_design <- svydesign(data = paSample, id = ~county + personid, fpc = ~N1 + N2, weights = ~wts)
 
-#### Chapter 2. Designs in R ####
+#### ~ Chapter 2. Designs in R ####
 # In the next few exercises we will practice specifying sampling designs using different samples from the api dataset, located in the survey package. The api dataset contains the Academic Performance Index and demographic information for schools in California. The apisrs dataset is a simple random sample of schools from the api dataset. Let's specify its design!
 
 # Instructions 
-# Use glimpse() to look at the apisrs dataset. Notice that pw contains the survey weights and fpc contains the total number of schools in the population.
+# (1) Use glimpse() to look at the apisrs dataset. Notice that pw contains the survey weights and fpc contains the total number of schools in the population.
 
+# install.packages("survey", dependencies = T)
 library(survey)
+library(tidyverse)
+data(api)
+glimpse(apisrs)
+
+# (2) Specify the correct sampling design for apisrs and store it in an object called apisrs_design.
+# Specify a simple random sampling for apisrs
+apisrs_design <- svydesign(
+  data = apisrs, 
+  weights = ~pw, 
+  fpc = ~fpc, 
+  id = ~1
+)
+
+# (3) Print out a summary of apisrs_design and notice what information is provided.
+summary(apisrs_design)
+
+#### ~ Chapter 3. Stratified Designs in R ####
+# Now let's practice specifying a stratified sampling design, using the dataset apistrat. The schools are stratified based on the school type stype where E = Elementary, M = Middle, and H = High School. For each school type, a simple random sample of schools was taken.
+
+# Instructions 
+# (1) Glimpse the data and notice the weights are stored in pw and fpc contains the total number of schools in each school type.
+# Glimpse the data
+glimpse(apistrat)
+
+# (2) Summarize how many schools were sampled in each strata by piping apistrat into count(stype)
+# Summarize strata sample sizes
+apistrat %>% count(stype)
+
+# (3) Specify the design for apistrat and store it in an object called apistrat_design
+ # Specify the design
+strat_design <- svydesign(data = apistrat, weights = ~pw, fpc = ~fpc, id = ~1, strata = ~stype)
+
+# # Look at the summary information for the stratified design
+summary(strat_design)
